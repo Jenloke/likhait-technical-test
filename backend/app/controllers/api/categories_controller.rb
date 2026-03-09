@@ -30,6 +30,12 @@ class Api::CategoriesController < ApplicationController
 
   def destroy
     category = Category.find_by!(name: params[:id])
+
+    if category.expenses.exists?
+      render json: { error: "Cannot delete category with existing expenses" }, status: :unprocessable_entity
+      return
+    end
+
     category.destroy
     head :no_content
   end

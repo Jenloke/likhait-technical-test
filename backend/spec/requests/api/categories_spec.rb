@@ -189,5 +189,17 @@ RSpec.describe "Api::Categories", type: :request do
 
       expect(response).to have_http_status(:not_found)
     end
+
+    it "cannot delete a category that has expenses" do
+      Expense.create!(description: "Lunch", amount: 100.00, category: category, date: Date.today)
+
+      expect {
+        delete "/api/categories/#{category.name}"
+      }.not_to change(Category, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      json = JSON.parse(response.body)
+      expect(json["error"]).to eq("Cannot delete category with existing expenses")
+    end
   end
 end
