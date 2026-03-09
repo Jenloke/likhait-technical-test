@@ -15,7 +15,7 @@ categories = [
   { name: 'Education', emoji: "📚" },
   { name: 'Travel', emoji: "✈️" },
   { name: 'Personal', emoji: "🧑" },
-  { name: 'Other' emoji: "📦" },
+  { name: 'Other', emoji: "📦" }
 ]
 
 created_categories = categories.map { |attrs| Category.create!(attrs) }
