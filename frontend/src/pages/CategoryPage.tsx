@@ -4,6 +4,7 @@ import { CategoryForm } from "../components/CategoryForm";
 import { Modal, Button } from "../vibes";
 import { COLORS } from "../constants/colors";
 import { createCategory, fetchCategories } from "../services/api";
+import { CategoryTable } from "../components/CategoryTable";
 
 const CategoryPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -85,13 +86,16 @@ const CategoryPage: React.FC = () => {
         {loading ? (
           <div style={loadingStyle}>Loading...</div>
         ) : (
-          <>
-            {categories.map((category) => (
-              <div key={category.id}>
+          <div style={{ marginTop: "32px" }}>
+            {/* {categories.map((category) => (
+              <div key={category.name}>
                 {category.name} {category.emoji}
               </div>
-            ))}
-          </>
+            ))} */}
+            <CategoryTable 
+              categories={categories} 
+              onCategoryUpdated={getCategories} />             
+          </div>
         )}
       </div>
 
