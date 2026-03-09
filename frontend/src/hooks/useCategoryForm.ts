@@ -12,7 +12,7 @@ interface UseExpenseFormProps {
 
 export function useCategoryForm({ initialData, onSubmit }: UseExpenseFormProps) {
   const [formData, setFormData] = useState<CategoryFormData>({
-    label: initialData?.label || "",
+    name: initialData?.name || "",
     emoji: initialData?.emoji || "",
   });
 
@@ -30,8 +30,8 @@ export function useCategoryForm({ initialData, onSubmit }: UseExpenseFormProps) 
   const validateForm = (): boolean => {
     const newErrors: Partial<CategoryFormData> = {};
 
-    if (!formData.label.trim()) {
-      newErrors.label = "Label is required";
+    if (!formData.name.trim()) {
+      newErrors.name = "Label is required";
     }
 
     if (!formData.emoji || !/^\p{Extended_Pictographic}$/u.test(formData.emoji)) {
@@ -54,7 +54,7 @@ export function useCategoryForm({ initialData, onSubmit }: UseExpenseFormProps) 
       await onSubmit(formData);
       // Reset form on success
       setFormData({
-        label: "",
+        name: "",
         emoji: "",  
       });
       setErrors({});
@@ -67,7 +67,7 @@ export function useCategoryForm({ initialData, onSubmit }: UseExpenseFormProps) 
 
   const resetForm = () => {
     setFormData({
-      label: initialData?.label || "",
+      name: initialData?.name || "",
       emoji: initialData?.emoji || "",
     });
     setErrors({});

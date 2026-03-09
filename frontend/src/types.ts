@@ -26,7 +26,7 @@ export interface Category {
 }
 
 export interface CategoryFormData {
-  label: string;
+  name: string;
   emoji: string;
 }
 
