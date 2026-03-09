@@ -68,6 +68,41 @@ export async function createCategory(data: CategoryFormData): Promise<Category> 
 }
 
 /**
+ * Update an existing category
+ */
+export async function updateCategory(
+  id: string,
+  data: Partial<CategoryFormData>,
+): Promise<Expense> {
+  const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ category: data }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update expense");
+  }
+
+  return response.json();
+}
+
+/**
+ * Delete a category
+ */
+export async function deleteCategory(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete expense");
+  }
+}
+
+/**
  * Create a new expense
  */
 export async function createExpense(data: ExpenseFormData): Promise<Expense> {
