@@ -52,9 +52,9 @@ export function CategoryForm({
       />
 
       <TextField
-        label="Description"
+        label="Emoji"
         type="text"
-        placeholder="Enter description"
+        placeholder="Enter Emoji (e.g. 🍔)"
         value={formData.emoji}
         onChange={(e) => handleChange("emoji", e.target.value)}
         error={errors.emoji}

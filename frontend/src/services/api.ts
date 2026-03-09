@@ -50,16 +50,17 @@ export async function fetchCategories(): Promise<
  * Create a new category
  */
 export async function createCategory(data: CategoryFormData): Promise<Category> {
-  // const categoryData = {
-  //   ...data
-  // };
+  const categoryData = {
+    name: data.label,
+    emoji: data.emoji,
+  };
 
   const response = await fetch(`${API_BASE_URL}/categories`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ category: { name: data.label } }),
+    body: JSON.stringify({ category: categoryData }),
   });
 
   if (!response.ok) {

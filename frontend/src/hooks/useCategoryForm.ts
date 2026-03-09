@@ -34,9 +34,9 @@ export function useCategoryForm({ initialData, onSubmit }: UseExpenseFormProps) 
       newErrors.label = "Label is required";
     }
 
-    // if (!formData.emoji || !/^\p{Extended_Pictographic}$/u.test(formData.emoji)) {
-    //   newErrors.emoji = "Must be an emoji";
-    // }
+    if (!formData.emoji || !/^\p{Extended_Pictographic}$/u.test(formData.emoji)) {
+      newErrors.emoji = "Must be an emoji";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

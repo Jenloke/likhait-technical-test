@@ -27,7 +27,7 @@ export interface Category {
 
 export interface CategoryFormData {
   label: string;
-  emoji?: string;
+  emoji: string;
 }
 
 export interface MonthlySummary {
