@@ -2,9 +2,9 @@ require 'rails_helper'
 
 RSpec.describe "Api::Categories", type: :request do
   describe "GET /api/categories" do
-    let!(:food) { Category.create!(name: "Food") }
-    let!(:transport) { Category.create!(name: "Transport") }
-    let!(:supplies) { Category.create!(name: "Supplies") }
+    let!(:food) { Category.create!(name: "Food", emoji: "🍔") }
+    let!(:transport) { Category.create!(name: "Transport", emoji: "🚗") }
+    let!(:entertainment) { Category.create!(name: "Entertainment", emoji: "🎬") }
 
     it "returns all categories" do
       get "/api/categories"
@@ -12,14 +12,16 @@ RSpec.describe "Api::Categories", type: :request do
       expect(response).to have_http_status(:success)
       json = JSON.parse(response.body)
       expect(json.length).to eq(3)
-      expect(json.map { |c| c["name"] }).to include("Food", "Transport", "Supplies")
+      expect(json.map { |c| c["name"] }).to include("Food", "Transport", "Entertainment")
+      expect(json.map { |c| c["emoji"] }).to include("🍔", "🚗", "🎬")
     end
 
     it "returns categories in alphabetical order" do
       get "/api/categories"
 
       json = JSON.parse(response.body)
-      expect(json.map { |c| c["name"] }).to eq([ "Food", "Supplies", "Transport" ])
+      expect(json.map { |c| c["name"] }).to eq([ "Entertainment", "Food", "Transport" ])
+      expect(json.map { |c| c["emoji"] }).to eq([ "🎬", "🍔", "🚗" ])
     end
   end
 
@@ -28,7 +30,8 @@ RSpec.describe "Api::Categories", type: :request do
       let(:valid_params) do
         {
           category: {
-            name: "Entertainment"
+            name: "Entertainment",
+            emoji: "🎬"
           }
         }
       end
@@ -42,6 +45,7 @@ RSpec.describe "Api::Categories", type: :request do
 
         json = JSON.parse(response.body)
         expect(json["name"]).to eq("Entertainment")
+        expect(json["emoji"]).to eq("🎬")
       end
     end
 
@@ -49,7 +53,8 @@ RSpec.describe "Api::Categories", type: :request do
       it "with missing name" do
         invalid_params = {
           category: {
-            name: ""
+            name: "",
+            emoji: "🎬"
           }
         }
 
@@ -63,12 +68,31 @@ RSpec.describe "Api::Categories", type: :request do
         expect(json["errors"]).to include("Name can't be blank")
       end
 
+      it "with missing emoji" do
+        invalid_params = {
+          category: {
+            name: "Entertainment",
+            emoji: ""
+          }
+        }
+
+        expect {
+          post "/api/categories", params: invalid_params, as: :json
+        }.not_to change(Category, :count)
+
+        expect(response).to have_http_status(:unprocessable_content)
+
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Emoji can't be blank")
+      end
+
       it "with duplicate name" do
-        Category.create!(name: "Utilities")
+        Category.create!(name: "Utilities", emoji: "💡")
 
         invalid_params = {
           category: {
-            name: "Utilities"
+            name: "Utilities",
+            emoji: "💡"
           }
         }
 
