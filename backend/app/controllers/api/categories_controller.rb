@@ -17,12 +17,13 @@ class Api::CategoriesController < ApplicationController
   private
 
   def categories_params
-    params.require(:category).permit(:name)
+    params.require(:category).permit(:name, :emoji)
   end
 
   def format_categories(category)
     {
-      name: category.name
+      name: category.name,
+      emoji: category.emoji
     }
   end
 end
