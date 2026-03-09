@@ -1,4 +1,8 @@
 class Api::CategoriesController < ApplicationController
+  rescue_from ActiveRecord::RecordNotFound do
+    render json: { error: "Category not found" }, status: :not_found
+  end
+
   def index
     categories = Category.order(:name)
     render json: categories
@@ -14,16 +18,25 @@ class Api::CategoriesController < ApplicationController
     end
   end
 
+  def update
+    category = Category.find_by!(name: params[:id])
+
+    if category.update(categories_params)
+      render json: category
+    else
+      render json: { errors: category.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    category = Category.find_by!(name: params[:id])
+    category.destroy
+    head :no_content
+  end
+
   private
 
   def categories_params
     params.require(:category).permit(:name, :emoji)
-  end
-
-  def format_categories(category)
-    {
-      name: category.name,
-      emoji: category.emoji
-    }
   end
 end
