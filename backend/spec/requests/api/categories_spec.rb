@@ -107,4 +107,87 @@ RSpec.describe "Api::Categories", type: :request do
       end
     end
   end
+
+  describe "PATCH /api/categories/:id" do
+    let!(:category) { Category.create!(name: "Food", emoji: "🍔") }
+
+    context "with valid parameters" do
+      it "updates the category name" do
+        patch "/api/categories/#{category.name}", params: { category: { name: "Groceries" } }, as: :json
+
+        expect(response).to have_http_status(:success)
+        json = JSON.parse(response.body)
+        expect(json["name"]).to eq("Groceries")
+      end
+
+      it "updates the category emoji" do
+        patch "/api/categories/#{category.name}", params: { category: { emoji: "🥗" } }, as: :json
+
+        expect(response).to have_http_status(:success)
+        json = JSON.parse(response.body)
+        expect(json["emoji"]).to eq("🥗")
+      end
+
+      it "updates both name and emoji" do
+        patch "/api/categories/#{category.name}", params: { category: { name: "Groceries", emoji: "🥗" } }, as: :json
+
+        expect(response).to have_http_status(:success)
+        json = JSON.parse(response.body)
+        expect(json["name"]).to eq("Groceries")
+        expect(json["emoji"]).to eq("🥗")
+      end
+    end
+
+    context "with invalid parameters" do
+      it "with missing name" do
+        patch "/api/categories/#{category.name}", params: { category: { name: "" } }, as: :json
+
+        expect(response).to have_http_status(:unprocessable_content)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Name can't be blank")
+      end
+
+      it "with missing emoji" do
+        patch "/api/categories/#{category.name}", params: { category: { emoji: "" } }, as: :json
+
+        expect(response).to have_http_status(:unprocessable_content)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Emoji can't be blank")
+      end
+
+      it "with duplicate name" do
+        Category.create!(name: "Transport", emoji: "🚗")
+
+        patch "/api/categories/#{category.name}", params: { category: { name: "Transport" } }, as: :json
+
+        expect(response).to have_http_status(:unprocessable_content)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Name has already been taken")
+      end
+
+      it "returns not found for non-existent category" do
+        patch "/api/categories/NonExistent", params: { category: { name: "Ghost" } }, as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe "DELETE /api/categories/:id" do
+    let!(:category) { Category.create!(name: "Food", emoji: "🍔") }
+
+    it "deletes the category" do
+      expect {
+        delete "/api/categories/#{category.name}"
+      }.to change(Category, :count).by(-1)
+
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it "returns not found for non-existent category" do
+      delete "/api/categories/NonExistent"
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end
