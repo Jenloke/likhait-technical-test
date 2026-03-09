@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe "Api::Expenses", type: :request do
-  let!(:food_category) { Category.create!(name: "Food") }
-  let!(:transport_category) { Category.create!(name: "Transport") }
+  let!(:food_category) { Category.create!(name: "Food", emoji: "🍔") }
+  let!(:transport_category) { Category.create!(name: "Transport", emoji: "🚗") }
 
   describe "GET /api/expenses" do
   let!(:expense1) { Expense.create!(description: "Lunch", amount: 100.00, category: food_category, date: Date.today) }
