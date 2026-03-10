@@ -33,7 +33,6 @@ const CategoryPage: React.FC = () => {
   const handleAddCategory = async (data: CategoryFormData) => {
     try {
       await createCategory(data);
-      console.log(data)
       setIsModalOpen(false);
       getCategories();
     } catch (error) {
