@@ -12,15 +12,22 @@ interface CategoryBreakdownProps {
   categories: CategoryData[];
   total: number;
   totalCount: number;
+  selectedCategory: string[];
+  onCategoryClick: (category: string[]) => void;  
+  isCategoryCollapsed: boolean;
+  onCategoryCollapse: () => void;
 }
 
 const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
   categories,
   total,
   totalCount,
+  selectedCategory,
+  onCategoryClick,
+  isCategoryCollapsed,
+  onCategoryCollapse,
+  
 }) => {
-  const [isCollapsed, setIsCollapsed] = React.useState(true);
-
   const formatAmount = (amount: number) => {
     return `$${amount.toFixed(2)}`;
   };
@@ -57,7 +64,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
 
   const totalCountStyle: React.CSSProperties = {
     fontSize: "14px",
-    color: COLORS.secondary.s07,
+    color: COLORS.secondary.s10,
     marginLeft: "auto",
   };
 
@@ -90,6 +97,11 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
     marginBottom: "8px",
     transition: "all 0.2s",
   };
+
+  const computedCategoryStyle: React.CSSProperties = {
+    ...itemStyle,
+    marginBottom: 0,
+  };  
 
   const itemInfoStyle: React.CSSProperties = {
     display: "flex",
@@ -136,13 +148,13 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
     <div style={containerStyle}>
       <div
         style={totalStyle}
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={() => onCategoryCollapse()}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            setIsCollapsed(!isCollapsed);
+            onCategoryCollapse;
           }
         }}
       >
@@ -151,10 +163,10 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
         <span style={totalCountStyle}>({totalCount} transactions)</span>
         <button
           style={toggleButtonStyle}
-          aria-label={isCollapsed ? "Expand" : "Collapse"}
+          aria-label={isCategoryCollapsed ? "Expand" : "Collapse"}
           onClick={(e) => {
             e.stopPropagation();
-            setIsCollapsed(!isCollapsed);
+            onCategoryCollapse();
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = COLORS.secondary.s04;
@@ -171,7 +183,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
             viewBox="0 0 16 16"
             fill="currentColor"
             style={{
-              transform: isCollapsed ? "rotate(180deg)" : "rotate(0deg)",
+              transform: isCategoryCollapsed ? "rotate(180deg)" : "rotate(0deg)",
               transition: "transform 0.2s",
             }}
           >
@@ -180,20 +192,39 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
         </button>
       </div>
 
-      {!isCollapsed && (
+      {!isCategoryCollapsed && (
         <div style={listStyle}>
-          {categories.map((category) => (
+          {categories.map((category) => {
+          const isSelected = selectedCategory.includes(category.category);
+
+          return (
             <div
               key={category.category}
-              style={itemStyle}
+              style={{
+                ...itemStyle,
+                background: isSelected ? COLORS.primary.p03 : COLORS.secondary.s01,
+                border: isSelected ? `2px solid ${COLORS.primary.p05}` : "2px solid transparent",
+                transition: "all 0.2s ease",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                if (isSelected) {
+                  onCategoryClick(selectedCategory.filter((c) => c !== category.category));
+                } else {
+                  onCategoryClick([...selectedCategory, category.category]);
+                }
+              }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = COLORS.secondary.s02;
+                e.currentTarget.style.background = isSelected
+                  ? COLORS.primary.p04
+                  : COLORS.secondary.s02;
                 e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow =
-                  "0 4px 12px rgba(0, 0, 0, 0.1)";
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = COLORS.secondary.s01;
+                e.currentTarget.style.background = isSelected
+                  ? COLORS.primary.p03
+                  : COLORS.secondary.s01;
                 e.currentTarget.style.transform = "translateY(0)";
                 e.currentTarget.style.boxShadow = "none";
               }}
@@ -212,7 +243,32 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
               </div>
               <div style={itemAmountStyle}>{formatAmount(category.amount)}</div>
             </div>
-          ))}
+          );
+          })}
+      </div>
+      )}
+
+      {selectedCategory.length > 0 && (
+        <div
+          style={computedCategoryStyle}
+        >
+          <div style={itemInfoStyle}>
+            <span style={itemIconStyle}>🧾</span>
+            <div style={itemDetailsStyle}>
+              <div style={itemNameStyle}>Total Selected</div>
+              <div style={itemCountStyle}>
+                {selectedCategory.length} categor
+                {selectedCategory.length !== 1 ? "ies" : "y"}
+              </div>
+            </div>
+          </div>
+          <div style={{ ...itemAmountStyle, fontWeight: 700 }}>
+            {formatAmount(
+              categories
+                .filter((c) => selectedCategory.includes(c.category))
+                .reduce((sum, c) => sum + c.amount, 0)
+            )}
+          </div>
         </div>
       )}
     </div>
