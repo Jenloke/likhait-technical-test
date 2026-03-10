@@ -82,6 +82,14 @@ const HistoryPage: React.FC = () => {
     }
   };
 
+  const [isCategoryCollapsed, setIsCategoryCollapsed] = React.useState(true);
+  
+  const [selectedCategory, setSelectedCategory] = useState<string[]>([]);  
+  const filteredExpenses =
+    selectedCategory.length > 0
+      ? expenses.filter((e) => selectedCategory.includes(e.category))
+      : expenses;
+
   // Calculate category breakdown
   const categoryData = expenses.reduce(
     (acc, expense) => {
@@ -165,13 +173,17 @@ const HistoryPage: React.FC = () => {
         ) : (
           <>
             <CategoryBreakdown
-              categories={categories}
-              total={total}
-              totalCount={totalCount}
-            />
+                categories={categories}
+                total={total}
+                totalCount={totalCount}
+                onCategoryClick={setSelectedCategory}
+                selectedCategory={selectedCategory}
+                isCategoryCollapsed={isCategoryCollapsed}
+                onCategoryCollapse={() => setIsCategoryCollapsed(!isCategoryCollapsed)}
+              />
             <div style={{ marginTop: "32px" }}>
               <CalendarExpenseTable
-                expenses={expenses}
+                expenses={filteredExpenses}
                 onExpenseUpdated={fetchExpenses}
               />
             </div>
