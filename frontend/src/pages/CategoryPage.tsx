@@ -87,11 +87,6 @@ const CategoryPage: React.FC = () => {
           <div style={loadingStyle}>Loading...</div>
         ) : (
           <div style={{ marginTop: "32px" }}>
-            {/* {categories.map((category) => (
-              <div key={category.name}>
-                {category.name} {category.emoji}
-              </div>
-            ))} */}
             <CategoryTable 
               categories={categories} 
               onCategoryUpdated={getCategories} />             
