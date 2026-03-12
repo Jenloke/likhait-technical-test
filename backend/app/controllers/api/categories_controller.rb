@@ -1,4 +1,8 @@
 class Api::CategoriesController < ApplicationController
+  rescue_from ActiveRecord::RecordNotFound do
+    render json: { error: "Category not found" }, status: :not_found
+  end
+
   def index
     categories = Category.order(:name)
     render json: categories
@@ -10,19 +14,35 @@ class Api::CategoriesController < ApplicationController
     if category.save
       render json: category, status: :created
     else
-      render json: { errors: category.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: category.errors.full_messages }, status: :unprocessable_content
     end
+  end
+
+  def update
+    category = Category.find_by!(name: params[:id])
+
+    if category.update(categories_params)
+      render json: category
+    else
+      render json: { errors: category.errors.full_messages }, status: :unprocessable_content
+    end
+  end
+
+  def destroy
+    category = Category.find_by!(name: params[:id])
+
+    if category.expenses.exists?
+      render json: { error: "Cannot delete category with existing expenses" }, status: :unprocessable_content
+      return
+    end
+
+    category.destroy
+    head :no_content
   end
 
   private
 
   def categories_params
-    params.require(:category).permit(:name)
-  end
-
-  def format_categories(category)
-    {
-      name: category.name
-    }
+    params.require(:category).permit(:name, :emoji)
   end
 end

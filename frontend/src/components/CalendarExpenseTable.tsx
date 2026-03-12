@@ -5,11 +5,11 @@
 import React, { useState } from "react";
 import { Expense, ExpenseFormData } from "../types";
 import { formatCurrency, formatDate } from "../utils/expenseUtils";
-import { getCategoryEmoji } from "../constants/categoryEmojis";
 import { COLORS } from "../constants/colors";
 import { Button, Modal, Pagination, SelectBox } from "../vibes";
 import { ExpenseForm } from "./ExpenseForm.tsx";
 import { deleteExpense, updateExpense } from "../services/api";
+import { useCategories } from "../hooks/useCategories.ts";
 
 interface CalendarExpenseTableProps {
   expenses: Expense[];
@@ -28,8 +28,9 @@ export function CalendarExpenseTable({
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const [itemsPerPage, setItemsPerPage] = useState(10);  
+  const { getCategoryEmoji } = useCategories();
 
+  const [itemsPerPage, setItemsPerPage] = useState(10);  
   const totalPages = Math.ceil(expenses.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;

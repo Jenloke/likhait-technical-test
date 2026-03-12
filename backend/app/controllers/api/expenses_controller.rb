@@ -1,4 +1,6 @@
 class Api::ExpensesController < ApplicationController
+  rescue_from ActiveRecord::RecordNotFound, with: :not_found
+
   def index
     expenses = Expense.includes(:category).order(date: :desc, created_at: :desc)
 
@@ -16,22 +18,30 @@ class Api::ExpensesController < ApplicationController
   end
 
   def create
-    expense = Expense.new(expense_params)
+    category = Category.find_by!(name: params[:expense][:category])
+    expense = Expense.new(expense_params.merge(category: category))
 
     if expense.save
       render json: format_expense(expense), status: :created
     else
-      render json: { errors: expense.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: expense.errors.full_messages }, status: :unprocessable_content
     end
   end
 
   def update
     expense = Expense.find(params[:id])
 
-    if expense.update(expense_params)
+    if params[:expense].key?(:category)
+      category = Category.find_by!(name: params[:expense][:category])
+      expense.assign_attributes(expense_params.merge(category: category))
+    else
+      expense.assign_attributes(expense_params)
+    end
+
+    if expense.save
       render json: format_expense(expense)
     else
-      render json: { errors: expense.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: expense.errors.full_messages }, status: :unprocessable_content
     end
   end
 
@@ -44,7 +54,7 @@ class Api::ExpensesController < ApplicationController
   private
 
   def expense_params
-    params.require(:expense).permit(:description, :amount, :category_id, :date)
+    params.require(:expense).permit(:description, :amount, :date)
   end
 
   def format_expense(expense)
@@ -57,5 +67,9 @@ class Api::ExpensesController < ApplicationController
       created_at: expense.created_at,
       updated_at: expense.updated_at
     }
+  end
+
+  def not_found
+    render json: { error: "Not found" }, status: :not_found
   end
 end

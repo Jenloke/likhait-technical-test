@@ -20,14 +20,13 @@ export interface ExpenseFormData {
 }
 
 export interface Category {
-  id: number;
   name: string;
-  emoji?: string;
+  emoji: string;
 }
 
 export interface CategoryFormData {
-  label: string;
-  emoji?: string;
+  name: string;
+  emoji: string;
 }
 
 export interface MonthlySummary {

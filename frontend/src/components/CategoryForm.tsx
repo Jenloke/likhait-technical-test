@@ -44,17 +44,17 @@ export function CategoryForm({
         label="Category Label"
         type="text"
         placeholder="Enter category label"
-        value={formData.label}
-        onChange={(e) => handleChange("label", e.target.value)}
-        error={errors.label}
+        value={formData.name}
+        onChange={(e) => handleChange("name", e.target.value)}
+        error={errors.name}
         fullWidth
         required
       />
 
       <TextField
-        label="Description"
+        label="Emoji"
         type="text"
-        placeholder="Enter description"
+        placeholder="Enter Emoji (e.g. 🍔)"
         value={formData.emoji}
         onChange={(e) => handleChange("emoji", e.target.value)}
         error={errors.emoji}
