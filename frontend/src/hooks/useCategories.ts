@@ -1,7 +1,9 @@
-// hooks/useCategories.ts
+/**
+ * Custom hook for fetching and caching category emojis
+ */
+
 import { useState, useEffect } from "react";
 import { fetchCategories } from "../services/api";
-// import { fetchCategories } from "@/lib/api";
 
 export interface Category {
   name: string;
@@ -10,13 +12,18 @@ export interface Category {
 
 let cachedCategories: Category[] = [];
 
-export function useCategories() {
+export function invalidateCategoriesEmojiCache() {
+  cachedCategories = [];
+}
+
+export function useCategoriesEmoji() {
   const [categories, setCategories] = useState<Category[]>(cachedCategories);
   const [loading, setLoading] = useState(cachedCategories.length === 0);
 
   useEffect(() => {
     if (cachedCategories.length > 0) return;
 
+    setLoading(true);
     fetchCategories().then((data) => {
       cachedCategories = data;
       setCategories(data);
