@@ -14,7 +14,7 @@ class Api::CategoriesController < ApplicationController
     if category.save
       render json: category, status: :created
     else
-      render json: { errors: category.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: category.errors.full_messages }, status: :unprocessable_content
     end
   end
 
@@ -24,7 +24,7 @@ class Api::CategoriesController < ApplicationController
     if category.update(categories_params)
       render json: category
     else
-      render json: { errors: category.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: category.errors.full_messages }, status: :unprocessable_content
     end
   end
 
@@ -32,7 +32,7 @@ class Api::CategoriesController < ApplicationController
     category = Category.find_by!(name: params[:id])
 
     if category.expenses.exists?
-      render json: { error: "Cannot delete category with existing expenses" }, status: :unprocessable_entity
+      render json: { error: "Cannot delete category with existing expenses" }, status: :unprocessable_content
       return
     end
 

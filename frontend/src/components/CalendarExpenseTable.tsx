@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import { Expense, ExpenseFormData } from "../types";
 import { formatCurrency, formatDate } from "../utils/expenseUtils";
 import { COLORS } from "../constants/colors";
-import { Button, Modal, Pagination } from "../vibes";
+import { Button, Modal, Pagination, SelectBox } from "../vibes";
 import { ExpenseForm } from "./ExpenseForm.tsx";
 import { deleteExpense, updateExpense } from "../services/api";
 import { useCategories } from "../hooks/useCategories.ts";
@@ -16,7 +16,7 @@ interface CalendarExpenseTableProps {
   onExpenseUpdated: () => void;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50];
 
 export function CalendarExpenseTable({
   expenses,
@@ -30,9 +30,10 @@ export function CalendarExpenseTable({
 
   const { getCategoryEmoji } = useCategories();
 
-  const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const [itemsPerPage, setItemsPerPage] = useState(10);  
+  const totalPages = Math.ceil(expenses.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
   const currentExpenses = expenses.slice(startIndex, endIndex);
 
   const handleEdit = (expense: Expense) => {
@@ -179,6 +180,25 @@ export function CalendarExpenseTable({
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
+
+      <div style={{ textAlign: 'center', margin: '1rem 0' }}>
+        Showing {startIndex + 1}-{Math.min(endIndex, expenses.length)} of {expenses.length} expenses
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+        <span>Items per page:</span>
+        <SelectBox
+          options={ITEMS_PER_PAGE_OPTIONS.map(val => ({
+            value: val.toString(),
+            label: val.toString()
+          }))}
+          value={itemsPerPage.toString()}
+          onChange={(e) => {
+            setItemsPerPage(Number(e.target.value));
+            setCurrentPage(1); // Reset to first page
+          }}
+        />
+      </div>
 
       <Modal
         isOpen={isEditModalOpen}
