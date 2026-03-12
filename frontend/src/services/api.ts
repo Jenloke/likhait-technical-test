@@ -2,36 +2,10 @@
  * API service for communicating with the backend
  */
 
+import { invalidateCategoriesEmojiCache } from "../hooks/useCategoryEmojis";
 import { Category, CategoryFormData, Expense, ExpenseFormData } from "../types";
 
 const API_BASE_URL = "http://localhost:3000/api";
-
-/**
- * Fetch all expenses
- */
-export async function fetchExpenses(): Promise<Expense[]> {
-  const response = await fetch(`${API_BASE_URL}/expenses`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch expenses");
-  }
-  return response.json();
-}
-
-/**
- * Fetch expenses for a specific year and month
- */
-export async function getExpenses(
-  year: number,
-  month: number,
-): Promise<Expense[]> {
-  const response = await fetch(
-    `${API_BASE_URL}/expenses?year=${year}&month=${month}`,
-  );
-  if (!response.ok) {
-    throw new Error("Failed to fetch expenses");
-  }
-  return response.json();
-}
 
 /**
  * Fetch all categories
@@ -64,6 +38,8 @@ export async function createCategory(data: CategoryFormData): Promise<Category> 
     throw new Error("Failed to create expense");
   }
 
+  invalidateCategoriesEmojiCache();
+
   return response.json();
 }
 
@@ -86,6 +62,8 @@ export async function updateCategory(
     throw new Error("Failed to update expense");
   }
 
+  invalidateCategoriesEmojiCache();
+
   return response.json();
 }
 
@@ -100,7 +78,37 @@ export async function deleteCategory(id: string): Promise<void> {
   if (!response.ok) {
     throw new Error("Failed to delete expense");
   }
+
+  invalidateCategoriesEmojiCache();
 }
+
+/**
+ * Fetch all expenses
+ */
+export async function fetchExpenses(): Promise<Expense[]> {
+  const response = await fetch(`${API_BASE_URL}/expenses`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch expenses");
+  }
+  return response.json();
+}
+
+/**
+ * Fetch expenses for a specific year and month
+ */
+export async function getExpenses(
+  year: number,
+  month: number,
+): Promise<Expense[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/expenses?year=${year}&month=${month}`,
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch expenses");
+  }
+  return response.json();
+}
+
 
 /**
  * Create a new expense

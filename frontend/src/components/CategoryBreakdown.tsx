@@ -1,6 +1,6 @@
 import React from "react";
 import { COLORS } from "../constants/colors";
-import { useCategories } from "../hooks/useCategories";
+import { useCategoriesEmoji } from "../hooks/useCategoryEmojis";
 
 interface CategoryData {
   category: string;
@@ -28,7 +28,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
   onCategoryCollapse,
   
 }) => {
-  const { getCategoryEmoji } = useCategories();
+  const { getCategoryEmoji } = useCategoriesEmoji();
 
   const formatAmount = (amount: number) => {
     return `$${amount.toFixed(2)}`;

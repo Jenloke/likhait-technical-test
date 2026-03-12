@@ -9,7 +9,7 @@ import { COLORS } from "../constants/colors";
 import { Button, Modal, Pagination, SelectBox } from "../vibes";
 import { ExpenseForm } from "./ExpenseForm.tsx";
 import { deleteExpense, updateExpense } from "../services/api";
-import { useCategories } from "../hooks/useCategories.ts";
+import { useCategoriesEmoji } from "../hooks/useCategoryEmojis.ts";
 
 interface CalendarExpenseTableProps {
   expenses: Expense[];
@@ -28,7 +28,7 @@ export function CalendarExpenseTable({
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const { getCategoryEmoji } = useCategories();
+  const { getCategoryEmoji } = useCategoriesEmoji();
 
   const [itemsPerPage, setItemsPerPage] = useState(10);  
   const totalPages = Math.ceil(expenses.length / itemsPerPage);
