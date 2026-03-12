@@ -2,7 +2,7 @@
  * API service for communicating with the backend
  */
 
-import { invalidateCategoriesEmojiCache } from "../hooks/useCategories";
+import { invalidateCategoriesEmojiCache } from "../hooks/useCategoryEmojis";
 import { Category, CategoryFormData, Expense, ExpenseFormData } from "../types";
 
 const API_BASE_URL = "http://localhost:3000/api";
