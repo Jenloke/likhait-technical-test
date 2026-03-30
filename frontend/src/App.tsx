@@ -6,7 +6,7 @@ import CategoryPage from "./pages/CategoryPage";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("history");
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   const appStyle: React.CSSProperties = {
     display: "flex",
@@ -16,8 +16,8 @@ function App() {
 
   const mainStyle: React.CSSProperties = {
     flex: 1,
-    marginLeft: isSidebarCollapsed ? "80px" : "360px",
-    transition: "margin-left 0.3s ease",
+    marginLeft: "80px",
+    transition: "margin-left 0.3s linear",
   };
 
   const handleToggleSidebar = () => {

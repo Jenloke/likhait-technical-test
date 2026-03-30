@@ -5,7 +5,7 @@ interface SidebarProps {
   onNavigate?: (page: string) => void;
   currentPage?: string;
   isCollapsed?: boolean;
-  onToggleCollapse?: () => void;
+  onToggleCollapse: () => void;
 }
 
 type NavItem = {
@@ -14,12 +14,17 @@ type NavItem = {
   icon: React.ReactNode;
 };
 
+// prevent retrigger load svg icons
+const NavIcon = React.memo(({ icon }: { icon: React.ReactNode }) => (
+  <span style={{ flexShrink: 0, display: "flex" }}>{icon}</span>
+));
+
 const navItems: NavItem[] = [
   {
     key: "history",
     label: "History",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
         <line x1="16" y1="2" x2="16" y2="6" />
         <line x1="8" y1="2" x2="8" y2="6" />
@@ -31,7 +36,7 @@ const navItems: NavItem[] = [
     key: "category",
     label: "Categories",
     icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
         <rect x="3" y="3" width="7" height="7" rx="1" />
         <rect x="14" y="3" width="7" height="7" rx="1" />
         <rect x="3" y="14" width="7" height="7" rx="1" />
@@ -47,8 +52,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed = false,
   onToggleCollapse,
 }) => {
+
   const sidebarStyle: React.CSSProperties = {
-    width: isCollapsed ? "80px" : "360px",
+    width: isCollapsed ? "80px" : "300px",
     height: "100vh",
     background: `linear-gradient(180deg, ${COLORS.primary.p01} 0%, ${COLORS.primary.p02} 100%)`,
     display: "flex",
@@ -57,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     position: "fixed",
     left: 0,
     top: 0,
-    transition: "width 0.1s ease",
+    transition: "all 0.3s linear",
   };
 
   const headerStyle: React.CSSProperties = {
@@ -88,8 +94,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const logoTextStyle: React.CSSProperties = {
-    display: isCollapsed ? "none" : "flex",
+    display: "flex",
     flexDirection: "column",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    width: isCollapsed ? "0px" : "160px",
+    transition: "width 0.3s linear, opacity 0.3s linear",
   };
 
   const logoTitleStyle: React.CSSProperties = {
@@ -99,21 +110,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     lineHeight: 1.2,
   };
 
-  const toggleButtonStyle: React.CSSProperties = {
-    width: "40px",
-    height: "40px",
-    background: "transparent",
-    border: "none",
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-
-    transition: "background 0.2s",
-    marginLeft: "16px",
-  };
-
   const navStyle: React.CSSProperties = {
     flex: 1,
     padding: "16px 0",
@@ -121,54 +117,54 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const navItemStyle: React.CSSProperties = {
     width: "100%",
-    padding: isCollapsed ? "16px" : "16px 24px",
+    padding: "12px 24px",
     display: "flex",
     alignItems: "center",
-    justifyContent: isCollapsed ? "center" : "flex-start",
-    gap: "16px",
-    background: currentPage === "history" ? COLORS.primary.p03 : "transparent",
+    gap: isCollapsed ? "0px" : "24px",
+    background: COLORS.primary.p01,
     border: "none",
     cursor: "pointer",
     fontSize: "18px",
     fontWeight: 500,
     color: COLORS.primary.p09,
     textAlign: "left",
-    transition: "background 0.2s",
+    transition: "background 0.3s linear",
   };
 
   const navTextStyle: React.CSSProperties = {
     display: isCollapsed ? "none" : "inline",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   };
 
   return (
-    <aside style={sidebarStyle}>
+    <aside 
+      style={sidebarStyle}
+    >
       <div style={headerStyle}>
-        <div style={logoStyle}>
-          <span style={logoIconStyle}>$</span>
+        <div style={logoStyle} onClick={() => {onToggleCollapse()}}>
+          <span style={logoIconStyle}>{
+            isCollapsed 
+              ? <>$</>
+              : <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="2"
+                  style={{
+                    transform: isCollapsed ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.3s ease",
+                }}>
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+          }</span>
           <div style={logoTextStyle}>
             <div style={logoTitleStyle}>Expense Tracker</div>
           </div>
         </div>
-        <button
-          style={toggleButtonStyle}
-          aria-label="Toggle sidebar"
-          onClick={onToggleCollapse}
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#464343"
-            strokeWidth="2"
-            style={{
-              transform: isCollapsed ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 0.3s ease",
-            }}
-          >
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
       </div>
 
       <nav style={navStyle}>
@@ -177,18 +173,10 @@ const Sidebar: React.FC<SidebarProps> = ({
             key={item.key}
             style={navItemStyle}
             onClick={() => onNavigate?.(item.key)}
-            onMouseEnter={(e) => {
-              if (currentPage !== item.key) {
-                e.currentTarget.style.background = COLORS.primary.p02;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (currentPage !== item.key) {
-                e.currentTarget.style.background = "transparent";
-              }
-            }}
+            onMouseEnter={(e) => {e.currentTarget.style.background = COLORS.primary.p03;}}
+            onMouseLeave={(e) => {e.currentTarget.style.background = COLORS.primary.p01;}}
           >
-            {item.icon}
+            <NavIcon icon={item.icon} />
             <span style={navTextStyle}>{item.label}</span>
           </button>
         ))}
