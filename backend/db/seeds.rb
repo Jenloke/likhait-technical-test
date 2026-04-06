@@ -112,7 +112,7 @@ expense_templates = {
 # Start date: January 1, 2024
 # End date: February 18, 2026
 start_date = Date.new(2024, 1, 1)
-end_date = Date.new(2026, 2, 18)
+end_date = Date.today
 
 expense_count = 0
 current_date = start_date
