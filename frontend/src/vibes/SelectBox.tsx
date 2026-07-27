@@ -17,8 +17,12 @@ export function SelectBox({
   error,
   fullWidth = false,
   options,
+  id,
   ...props
 }: SelectBoxProps) {
+  const generatedId = React.useId();
+  const selectId = id ?? generatedId;
+
   const containerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -52,8 +56,12 @@ export function SelectBox({
 
   return (
     <div style={containerStyle}>
-      {label && <label style={labelStyle}>{label}</label>}
-      <select style={selectStyle} {...props}>
+      {label && (
+        <label style={labelStyle} htmlFor={selectId}>
+          {label}
+        </label>
+      )}
+      <select id={selectId} style={selectStyle} {...props}>
         <option value="">Select...</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>

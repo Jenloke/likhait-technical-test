@@ -1,0 +1,224 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  RAILS_ENV: test
+  DATABASE_HOST: 127.0.0.1
+  DATABASE_USERNAME: root
+  DATABASE_PASSWORD: rootpassword
+  DATABASE_NAME: expense_system_test
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -prootpassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3.7"
+          bundler-cache: true
+          working-directory: backend
+
+      - name: Prepare the test database
+        run: bin/rails db:create db:schema:load
+
+      - name: Rubocop
+        run: bundle exec rubocop
+
+      - name: RSpec
+        run: bundle exec rspec
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Typecheck + build
+        run: npm run build
+
+      - name: Vitest
+        run: npm run test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -prootpassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3.7"
+          bundler-cache: true
+          working-directory: backend
+
+      - name: Prepare the test database
+        working-directory: backend
+        run: bin/rails db:create db:schema:load db:seed
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Playwright tests
+        working-directory: frontend
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+
+  # Validates the actual deployment artifacts (Dockerfiles + docker-compose.yml),
+  # not just the application code -- builds the real images, boots the real
+  # stack, and runs the same E2E suite against it. The `backend`/`frontend`/`e2e`
+  # jobs above never touch these files at all (they run Ruby/Node natively),
+  # so a broken Dockerfile or compose wiring wouldn't be caught without this.
+  docker-deploy:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      # Installed *before* `docker compose up`, not just for the Playwright
+      # CLI: docker-compose.yml mounts a named volume at frontend/node_modules
+      # inside the frontend/:/app bind mount, and Docker creates that mount
+      # point as root the first time the volume is used if it doesn't already
+      # exist. Doing npm ci first means the directory already exists, owned
+      # by the runner user, so Docker never touches its ownership.
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Build images
+        run: docker compose build
+
+      - name: Start the stack
+        run: docker compose up -d
+
+      - name: Wait for the backend to become healthy
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3000/up > /dev/null; then
+              echo "Backend is up"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Backend did not become healthy in time"
+          docker compose logs backend
+          exit 1
+
+      - name: Wait for the frontend to become available
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:5173 > /dev/null; then
+              echo "Frontend is up"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::Frontend did not become available in time"
+          docker compose logs frontend
+          exit 1
+
+      - name: Smoke test the API
+        run: curl -sf http://localhost:3000/api/categories | grep -q '"name"'
+
+      - name: Run the E2E suite against the Dockerized stack
+        working-directory: frontend
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-playwright-report
+          path: frontend/playwright-report
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
