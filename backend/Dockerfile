@@ -15,9 +15,10 @@ RUN apt-get update -qq && \
 # Install application gems
 COPY Gemfile Gemfile.lock ./
 
-# Configure bundler and install gems with retry logic
+# Configure bundler and install gems with retry logic.
+# Gems install to the default BUNDLE_PATH (/usr/local/bundle, set by the base
+# ruby image), matching the backend_gems volume mounted there in compose.
 RUN bundle config set --local deployment 'false' && \
-    bundle config set --local path 'vendor/bundle' && \
     bundle install --jobs 4 --retry 3
 
 # Copy application code

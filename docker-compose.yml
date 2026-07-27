@@ -10,10 +10,9 @@ services:
       MYSQL_USER: expense_user
       MYSQL_PASSWORD: expense_password
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test:
         [
@@ -55,6 +54,7 @@ services:
     command: >
       sh -c "
         bundle install &&
+        rm -f tmp/pids/server.pid &&
         rails db:migrate &&
         rails db:seed &&
         rails server -b 0.0.0.0
