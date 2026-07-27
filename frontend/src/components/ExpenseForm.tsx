@@ -60,7 +60,10 @@ export function ExpenseForm({
 
   return (
     <>
-      <form onSubmit={handleSubmit} style={formStyle}>
+      {/* noValidate: without it, native required/max constraint validation
+          blocks submission before handleSubmit runs, so validateForm's
+          messages (e.g. the future-date explanation) never get shown. */}
+      <form onSubmit={handleSubmit} noValidate style={formStyle}>
         <TextField
           label="Amount"
           type="number"
