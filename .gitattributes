@@ -1,0 +1,6 @@
+# Force LF line endings for files that get executed inside Linux containers.
+# Without this, a Windows checkout with core.autocrlf=true can convert these
+# to CRLF, which breaks their shebang line once baked into the image (the
+# interpreter path becomes "/bin/bash\r" and fails with "bad interpreter").
+*.sh text eol=lf
+backend/bin/* text eol=lf

@@ -24,8 +24,8 @@ end
 
 puts "Created #{created_categories.count} categories"
 
-# Generate expenses from January 2024 to February 18, 2026
-puts "Creating expenses from January 2024 to February 18, 2026..."
+# Generate expenses from January 1, 2024 through yesterday
+puts "Creating expenses..."
 
 # Define expense templates for variety
 expense_templates = {
@@ -112,9 +112,9 @@ expense_templates = {
 }
 
 # Start date: January 1, 2024
-# End date: February 18, 2026
+# End date: yesterday
 start_date = Date.new(2024, 1, 1)
-end_date = Date.new(2026, 2, 18)
+end_date = Date.yesterday
 
 expense_count = 0
 current_date = start_date
