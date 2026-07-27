@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe "Api::Expenses", type: :request do
+  include ActiveSupport::Testing::TimeHelpers
+
   let!(:food_category) { Category.create!(name: "Food") }
   let!(:transport_category) { Category.create!(name: "Transport") }
 
@@ -131,6 +133,20 @@ RSpec.describe "Api::Expenses", type: :request do
         expect(response).to have_http_status(:unprocessable_entity)
         json = JSON.parse(response.body)
         expect(json["errors"]).to include("Date must be less than or equal to #{Date.current}")
+      end
+
+      it "with a date that is tomorrow in UTC but still today in the client's time zone" do
+        travel_to Time.utc(2026, 7, 27, 23, 0, 0) do
+          params = {
+            expense: base_params.merge(date: Date.new(2026, 7, 28), timezone_offset_minutes: -480)
+          }
+
+          expect {
+            post "/api/expenses", params: params, as: :json
+          }.to change(Expense, :count).by(1)
+
+          expect(response).to have_http_status(:created)
+        end
       end
     end
   end
