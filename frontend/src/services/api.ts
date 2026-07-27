@@ -59,6 +59,7 @@ export async function createExpense(data: ExpenseFormData): Promise<Expense> {
     amount: data.amount,
     category_id: category?.id,
     date: data.date,
+    timezone_offset_minutes: new Date().getTimezoneOffset(),
   };
 
   const response = await fetch(`${API_BASE_URL}/expenses`, {
@@ -83,12 +84,17 @@ export async function updateExpense(
   id: number,
   data: Partial<ExpenseFormData>,
 ): Promise<Expense> {
+  const expenseData = {
+    ...data,
+    timezone_offset_minutes: new Date().getTimezoneOffset(),
+  };
+
   const response = await fetch(`${API_BASE_URL}/expenses/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ expense: data }),
+    body: JSON.stringify({ expense: expenseData }),
   });
 
   if (!response.ok) {

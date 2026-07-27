@@ -44,7 +44,7 @@ class Api::ExpensesController < ApplicationController
   private
 
   def expense_params
-    params.require(:expense).permit(:description, :amount, :category_id, :date)
+    params.require(:expense).permit(:description, :amount, :category_id, :date, :timezone_offset_minutes)
   end
 
   def format_expense(expense)

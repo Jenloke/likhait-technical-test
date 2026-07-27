@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe "Api::Expenses", type: :request do
+  include ActiveSupport::Testing::TimeHelpers
+
   let!(:food_category) { Category.create!(name: "Food") }
   let!(:transport_category) { Category.create!(name: "Transport") }
 
@@ -69,21 +71,14 @@ RSpec.describe "Api::Expenses", type: :request do
   end
 
   describe "POST /api/expenses" do
-    context "with valid parameters" do
-      let(:valid_params) do
-        {
-          expense: {
-            description: "Team Lunch",
-            amount: 150.50,
-            category_id: food_category.id,
-            date: Date.today
-          }
-        }
-      end
+    let(:base_params) do
+      { description: "Team Lunch", amount: 150.50, category_id: food_category.id, date: Date.today }
+    end
 
+    context "with valid parameters" do
       it "creates a new expense" do
         expect {
-          post "/api/expenses", params: valid_params, as: :json
+          post "/api/expenses", params: { expense: base_params }, as: :json
         }.to change(Expense, :count).by(1)
 
         expect(response).to have_http_status(:created)
@@ -95,38 +90,125 @@ RSpec.describe "Api::Expenses", type: :request do
 
     context "with invalid parameters" do
       it "with negative amounts" do
-        invalid_params = {
-          expense: {
-            description: "Invalid expense",
-            amount: -100.00,
-            category_id: food_category.id,
-            date: Date.today
-          }
-        }
+        params = { expense: base_params.merge(amount: -100.00) }
 
         expect {
-          post "/api/expenses", params: invalid_params, as: :json
-        }.to change(Expense, :count).by(1)
+          post "/api/expenses", params: params, as: :json
+        }.not_to change(Expense, :count)
 
-        expect(response).to have_http_status(:created)
+        expect(response).to have_http_status(:unprocessable_entity)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Amount must be greater than 0")
+      end
+
+      it "with a non-numeric amount" do
+        params = { expense: base_params.merge(amount: "not-a-number") }
+
+        expect {
+          post "/api/expenses", params: params, as: :json
+        }.not_to change(Expense, :count)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Amount is not a number")
       end
 
       it "with empty descriptions" do
-        invalid_params = {
-          expense: {
-            description: "",
-            amount: 100.00,
-            category_id: food_category.id,
-            date: Date.today
-          }
-        }
+        params = { expense: base_params.merge(description: "") }
 
         expect {
-          post "/api/expenses", params: invalid_params, as: :json
+          post "/api/expenses", params: params, as: :json
         }.to change(Expense, :count).by(1)
 
         expect(response).to have_http_status(:created)
       end
+
+      it "with a future date" do
+        params = { expense: base_params.merge(date: Date.tomorrow) }
+
+        expect {
+          post "/api/expenses", params: params, as: :json
+        }.not_to change(Expense, :count)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Date must be less than or equal to #{Date.current}")
+      end
+
+      it "with a date that is tomorrow in UTC but still today in the client's time zone" do
+        travel_to Time.utc(2026, 7, 27, 23, 0, 0) do
+          params = {
+            expense: base_params.merge(date: Date.new(2026, 7, 28), timezone_offset_minutes: -480)
+          }
+
+          expect {
+            post "/api/expenses", params: params, as: :json
+          }.to change(Expense, :count).by(1)
+
+          expect(response).to have_http_status(:created)
+        end
+      end
+    end
+  end
+
+  describe "PUT /api/expenses/:id" do
+    let!(:expense) do
+      Expense.create!(description: "Lunch", amount: 20.00, category: food_category, date: Date.today)
+    end
+
+    it "rejects updating the date to a future date" do
+      put "/api/expenses/#{expense.id}", params: { expense: { date: Date.tomorrow } }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      json = JSON.parse(response.body)
+      expect(json["errors"]).to include("Date must be less than or equal to #{Date.current}")
+      expect(expense.reload.date).to eq(Date.today)
+    end
+
+    it "accepts a date that is tomorrow in UTC but still today in the client's time zone" do
+      travel_to Time.utc(2026, 7, 27, 23, 0, 0) do
+        put "/api/expenses/#{expense.id}", params: {
+          expense: { date: Date.new(2026, 7, 28), timezone_offset_minutes: -480 }
+        }, as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(expense.reload.date).to eq(Date.new(2026, 7, 28))
+      end
+    end
+
+    it "rejects an implausibly large spoofed offset instead of allowing an arbitrary future date" do
+      original_date = expense.date
+
+      travel_to Time.utc(2026, 7, 27, 23, 0, 0) do
+        put "/api/expenses/#{expense.id}", params: {
+          expense: { date: Date.new(2030, 1, 1), timezone_offset_minutes: -999_999_999 }
+        }, as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        json = JSON.parse(response.body)
+        # Clamped to the max permissive offset (-840, UTC+14), not all the way to 2030
+        expect(json["errors"]).to include("Date must be less than or equal to 2026-07-28")
+      end
+
+      expect(expense.reload.date).to eq(original_date)
+    end
+
+    it "rejects updating the amount to a negative value" do
+      put "/api/expenses/#{expense.id}", params: { expense: { amount: -50.00 } }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      json = JSON.parse(response.body)
+      expect(json["errors"]).to include("Amount must be greater than 0")
+      expect(expense.reload.amount).to eq(20.00)
+    end
+
+    it "rejects updating the amount to a non-numeric value" do
+      put "/api/expenses/#{expense.id}", params: { expense: { amount: "not-a-number" } }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      json = JSON.parse(response.body)
+      expect(json["errors"]).to include("Amount is not a number")
+      expect(expense.reload.amount).to eq(20.00)
     end
   end
 end
