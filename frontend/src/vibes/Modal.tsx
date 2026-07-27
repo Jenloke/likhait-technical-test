@@ -2,7 +2,7 @@
  * Reusable Modal component
  */
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { COLORS } from "../constants/colors";
 
 interface ModalProps {
@@ -13,6 +13,15 @@ interface ModalProps {
   maxWidth?: string;
 }
 
+// A single global keydown listener and body-scroll lock per open Modal
+// breaks when two Modals stack (e.g. AddCategoryModal opened from within an
+// ExpenseForm modal): Escape would fire on both and close whichever one's
+// listener runs, not just the topmost, and closing the inner one would
+// unconditionally reset body scroll even though the outer one is still
+// open. Track open instances so only the topmost responds to Escape, and
+// scroll is only unlocked once none remain.
+let openModalStack: symbol[] = [];
+
 export function Modal({
   isOpen,
   onClose,
@@ -20,23 +29,39 @@ export function Modal({
   children,
   maxWidth = "500px",
 }: ModalProps) {
+  const instanceId = useRef(Symbol("modal")).current;
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    openModalStack.push(instanceId);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      openModalStack = openModalStack.filter((id) => id !== instanceId);
+      if (openModalStack.length === 0) {
+        document.body.style.overflow = "unset";
+      }
+    };
+  }, [isOpen, instanceId]);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      const isTopmost =
+        openModalStack[openModalStack.length - 1] === instanceId;
+      if (e.key === "Escape" && isTopmost) {
         onClose();
       }
     };
 
     if (isOpen) {
       document.addEventListener("keydown", handleEscape);
-      document.body.style.overflow = "hidden";
     }
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, instanceId]);
 
   if (!isOpen) return null;
 

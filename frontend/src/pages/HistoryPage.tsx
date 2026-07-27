@@ -6,6 +6,8 @@ import { MonthNavigation } from "../components/MonthNavigation";
 import CategoryBreakdown from "../components/CategoryBreakdown";
 import { CalendarExpenseTable } from "../components/CalendarExpenseTable";
 import { ExpenseForm } from "../components/ExpenseForm";
+import { AddCategoryModal } from "../components/AddCategoryModal";
+import { useCategories } from "../hooks/useCategories";
 import { Modal, Button } from "../vibes";
 import { COLORS } from "../constants/colors";
 
@@ -13,6 +15,8 @@ const HistoryPage: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const { categories: allCategories, addCategory } = useCategories();
 
   // Get year and month from URL params, default to current date if not provided
   const getInitialYearMonth = () => {
@@ -148,9 +152,17 @@ const HistoryPage: React.FC = () => {
             onYearChange={handleYearChange}
           />
         </div>
-        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-          Add Expense
-        </Button>
+        <div style={{ display: "flex", gap: "12px" }}>
+          <Button
+            variant="secondary"
+            onClick={() => setIsAddCategoryModalOpen(true)}
+          >
+            + Add Category
+          </Button>
+          <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+            Add Expense
+          </Button>
+        </div>
       </div>
 
       <MonthNavigation
@@ -189,6 +201,14 @@ const HistoryPage: React.FC = () => {
           onCancel={() => setIsModalOpen(false)}
         />
       </Modal>
+
+      <AddCategoryModal
+        isOpen={isAddCategoryModalOpen}
+        onClose={() => setIsAddCategoryModalOpen(false)}
+        existingNames={allCategories.map((c) => c.name)}
+        onCreate={addCategory}
+        onCreated={() => {}}
+      />
     </div>
   );
 };

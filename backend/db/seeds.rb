@@ -5,21 +5,21 @@ Category.destroy_all
 
 # Create categories
 puts "Creating categories..."
-categories = [
-  'Food',
-  'Transportation',
-  'Shopping',
-  'Entertainment',
-  'Bills',
-  'Healthcare',
-  'Education',
-  'Travel',
-  'Personal',
-  'Other'
-]
+categories = {
+  'Food' => '🍔',
+  'Transportation' => '🚗',
+  'Shopping' => '🛍️',
+  'Entertainment' => '🎬',
+  'Bills' => '📄',
+  'Healthcare' => '🏥',
+  'Education' => '📚',
+  'Travel' => '✈️',
+  'Personal' => '📦',
+  'Other' => '📦'
+}
 
-created_categories = categories.map do |cat_name|
-  Category.create!(name: cat_name)
+created_categories = categories.map do |cat_name, emoji|
+  Category.create!(name: cat_name, emoji: emoji)
 end
 
 puts "Created #{created_categories.count} categories"
