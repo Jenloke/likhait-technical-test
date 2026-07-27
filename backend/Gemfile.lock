@@ -266,6 +266,7 @@ GEM
     securerandom (0.4.1)
     shoulda-matchers (6.5.0)
       activesupport (>= 5.2.0)
+    simplecov (1.0.3)
     stringio (3.2.0)
     thor (1.5.0)
     timeout (0.6.0)
@@ -302,6 +303,7 @@ DEPENDENCIES
   rspec-rails (~> 6.1.0)
   rubocop-rails-omakase
   shoulda-matchers (~> 6.0)
+  simplecov
   tzinfo-data
 
 RUBY VERSION
