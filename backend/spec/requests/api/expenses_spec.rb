@@ -16,12 +16,55 @@ RSpec.describe "Api::Expenses", type: :request do
       expect(json.length).to eq(2)
     end
 
-    it "returns expenses in descending order by created_at" do
+    it "returns expenses in descending order by date, falling back to created_at for ties" do
       get "/api/expenses"
 
       json = JSON.parse(response.body)
       expect(json.first["id"]).to eq(expense2.id)
       expect(json.last["id"]).to eq(expense1.id)
+    end
+
+    it "ranks a backdated expense last even though it was created most recently" do
+      backdated_expense = Expense.create!(
+        description: "Old receipt", amount: 20.00, category: food_category, date: Date.today - 30
+      )
+
+      get "/api/expenses"
+
+      json = JSON.parse(response.body)
+      expect(json.last["id"]).to eq(backdated_expense.id)
+    end
+
+    it "puts a newly added today-dated expense at the top, ahead of previously created same-day entries" do
+      post "/api/expenses", params: {
+        expense: { description: "Team Lunch", amount: 42.00, category_id: food_category.id, date: Date.today }
+      }, as: :json
+      new_expense_id = JSON.parse(response.body)["id"]
+
+      get "/api/expenses"
+
+      json = JSON.parse(response.body)
+      expect(json.first["id"]).to eq(new_expense_id)
+    end
+
+    describe "with year/month params" do
+      it "includes a March-dated expense entered in January, and excludes an April-dated expense entered in March" do
+        march_expense = Expense.create!(
+          description: "March conference", amount: 300.00, category: food_category,
+          date: Date.new(2026, 3, 15), created_at: Date.new(2026, 1, 5)
+        )
+        april_expense = Expense.create!(
+          description: "April rent", amount: 500.00, category: food_category,
+          date: Date.new(2026, 4, 1), created_at: Date.new(2026, 3, 20)
+        )
+
+        get "/api/expenses", params: { year: 2026, month: 3 }
+
+        json = JSON.parse(response.body)
+        ids = json.map { |expense| expense["id"] }
+        expect(ids).to include(march_expense.id)
+        expect(ids).not_to include(april_expense.id)
+      end
     end
   end
 
