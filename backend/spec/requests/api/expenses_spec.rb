@@ -69,21 +69,14 @@ RSpec.describe "Api::Expenses", type: :request do
   end
 
   describe "POST /api/expenses" do
-    context "with valid parameters" do
-      let(:valid_params) do
-        {
-          expense: {
-            description: "Team Lunch",
-            amount: 150.50,
-            category_id: food_category.id,
-            date: Date.today
-          }
-        }
-      end
+    let(:base_params) do
+      { description: "Team Lunch", amount: 150.50, category_id: food_category.id, date: Date.today }
+    end
 
+    context "with valid parameters" do
       it "creates a new expense" do
         expect {
-          post "/api/expenses", params: valid_params, as: :json
+          post "/api/expenses", params: { expense: base_params }, as: :json
         }.to change(Expense, :count).by(1)
 
         expect(response).to have_http_status(:created)
@@ -95,37 +88,35 @@ RSpec.describe "Api::Expenses", type: :request do
 
     context "with invalid parameters" do
       it "with negative amounts" do
-        invalid_params = {
-          expense: {
-            description: "Invalid expense",
-            amount: -100.00,
-            category_id: food_category.id,
-            date: Date.today
-          }
-        }
+        params = { expense: base_params.merge(amount: -100.00) }
 
         expect {
-          post "/api/expenses", params: invalid_params, as: :json
+          post "/api/expenses", params: params, as: :json
         }.to change(Expense, :count).by(1)
 
         expect(response).to have_http_status(:created)
       end
 
       it "with empty descriptions" do
-        invalid_params = {
-          expense: {
-            description: "",
-            amount: 100.00,
-            category_id: food_category.id,
-            date: Date.today
-          }
-        }
+        params = { expense: base_params.merge(description: "") }
 
         expect {
-          post "/api/expenses", params: invalid_params, as: :json
+          post "/api/expenses", params: params, as: :json
         }.to change(Expense, :count).by(1)
 
         expect(response).to have_http_status(:created)
+      end
+
+      it "with a future date" do
+        params = { expense: base_params.merge(date: Date.tomorrow) }
+
+        expect {
+          post "/api/expenses", params: params, as: :json
+        }.not_to change(Expense, :count)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Date must be less than or equal to #{Date.current}")
       end
     end
   end
