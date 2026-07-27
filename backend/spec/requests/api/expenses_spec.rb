@@ -92,9 +92,23 @@ RSpec.describe "Api::Expenses", type: :request do
 
         expect {
           post "/api/expenses", params: params, as: :json
-        }.to change(Expense, :count).by(1)
+        }.not_to change(Expense, :count)
 
-        expect(response).to have_http_status(:created)
+        expect(response).to have_http_status(:unprocessable_entity)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Amount must be greater than 0")
+      end
+
+      it "with a non-numeric amount" do
+        params = { expense: base_params.merge(amount: "not-a-number") }
+
+        expect {
+          post "/api/expenses", params: params, as: :json
+        }.not_to change(Expense, :count)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Amount is not a number")
       end
 
       it "with empty descriptions" do
