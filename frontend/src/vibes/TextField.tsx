@@ -15,8 +15,12 @@ export function TextField({
   label,
   error,
   fullWidth = false,
+  id,
   ...props
 }: TextFieldProps) {
+  const generatedId = React.useId();
+  const inputId = id ?? generatedId;
+
   const containerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -49,8 +53,12 @@ export function TextField({
 
   return (
     <div style={containerStyle}>
-      {label && <label style={labelStyle}>{label}</label>}
-      <input style={inputStyle} {...props} />
+      {label && (
+        <label style={labelStyle} htmlFor={inputId}>
+          {label}
+        </label>
+      )}
+      <input id={inputId} style={inputStyle} {...props} />
       {error && <span style={errorStyle}>{error}</span>}
     </div>
   );
