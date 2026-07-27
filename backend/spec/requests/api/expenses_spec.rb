@@ -150,4 +150,65 @@ RSpec.describe "Api::Expenses", type: :request do
       end
     end
   end
+
+  describe "PUT /api/expenses/:id" do
+    let!(:expense) do
+      Expense.create!(description: "Lunch", amount: 20.00, category: food_category, date: Date.today)
+    end
+
+    it "rejects updating the date to a future date" do
+      put "/api/expenses/#{expense.id}", params: { expense: { date: Date.tomorrow } }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      json = JSON.parse(response.body)
+      expect(json["errors"]).to include("Date must be less than or equal to #{Date.current}")
+      expect(expense.reload.date).to eq(Date.today)
+    end
+
+    it "accepts a date that is tomorrow in UTC but still today in the client's time zone" do
+      travel_to Time.utc(2026, 7, 27, 23, 0, 0) do
+        put "/api/expenses/#{expense.id}", params: {
+          expense: { date: Date.new(2026, 7, 28), timezone_offset_minutes: -480 }
+        }, as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(expense.reload.date).to eq(Date.new(2026, 7, 28))
+      end
+    end
+
+    it "rejects an implausibly large spoofed offset instead of allowing an arbitrary future date" do
+      original_date = expense.date
+
+      travel_to Time.utc(2026, 7, 27, 23, 0, 0) do
+        put "/api/expenses/#{expense.id}", params: {
+          expense: { date: Date.new(2030, 1, 1), timezone_offset_minutes: -999_999_999 }
+        }, as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        json = JSON.parse(response.body)
+        # Clamped to the max permissive offset (-840, UTC+14), not all the way to 2030
+        expect(json["errors"]).to include("Date must be less than or equal to 2026-07-28")
+      end
+
+      expect(expense.reload.date).to eq(original_date)
+    end
+
+    it "rejects updating the amount to a negative value" do
+      put "/api/expenses/#{expense.id}", params: { expense: { amount: -50.00 } }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      json = JSON.parse(response.body)
+      expect(json["errors"]).to include("Amount must be greater than 0")
+      expect(expense.reload.amount).to eq(20.00)
+    end
+
+    it "rejects updating the amount to a non-numeric value" do
+      put "/api/expenses/#{expense.id}", params: { expense: { amount: "not-a-number" } }, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      json = JSON.parse(response.body)
+      expect(json["errors"]).to include("Amount is not a number")
+      expect(expense.reload.amount).to eq(20.00)
+    end
+  end
 end

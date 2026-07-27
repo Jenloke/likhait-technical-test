@@ -9,9 +9,14 @@ class Expense < ApplicationRecord
 
   private
 
+  # Real-world UTC offsets: -12:00 to +14:00 (JS getTimezoneOffset sign-flips this).
+  MIN_TIMEZONE_OFFSET_MINUTES = -840
+  MAX_TIMEZONE_OFFSET_MINUTES = 720
+
   def max_allowed_date
     return Date.current if timezone_offset_minutes.blank?
 
-    (Time.current.utc - timezone_offset_minutes.to_i.minutes).to_date
+    clamped_offset = timezone_offset_minutes.to_i.clamp(MIN_TIMEZONE_OFFSET_MINUTES, MAX_TIMEZONE_OFFSET_MINUTES)
+    (Time.current.utc - clamped_offset.minutes).to_date
   end
 end
