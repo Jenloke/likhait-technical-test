@@ -230,6 +230,7 @@ const HistoryPage: React.FC = () => {
               <CalendarExpenseTable
                 expenses={filteredExpenses}
                 onExpenseUpdated={fetchExpenses}
+                resetPaginationKey={selectedCategories.slice().sort().join(",")}
               />
             </div>
           </>
