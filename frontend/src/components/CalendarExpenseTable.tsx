@@ -6,8 +6,10 @@ import React, { useState } from "react";
 import { Expense, ExpenseFormData } from "../types";
 import { formatCurrency, formatDate } from "../utils/expenseUtils";
 import { useCategories } from "../hooks/useCategories";
+import { useIsMobile } from "../hooks/useMediaQuery";
 import { COLORS } from "../constants/colors";
-import { Button, Modal, Pagination } from "../vibes";
+import { TYPOGRAPHY } from "../constants/typography";
+import { AnimatedCollapse, Button, Modal, Pagination } from "../vibes";
 import { ExpenseForm } from "./ExpenseForm.tsx";
 import { deleteExpense, updateExpense } from "../services/api";
 
@@ -27,6 +29,8 @@ export function CalendarExpenseTable({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const isMobile = useIsMobile();
   const { categories } = useCategories();
   const emojiByName = new Map(categories.map((c) => [c.name, c.emoji]));
   const getCategoryEmoji = (category: string) =>
@@ -89,7 +93,7 @@ export function CalendarExpenseTable({
   const thStyle: React.CSSProperties = {
     padding: "0.75rem",
     textAlign: "left",
-    fontWeight: 600,
+    fontWeight: TYPOGRAPHY.weight.semibold,
     color: COLORS.text.primary,
     borderBottom: `2px solid ${COLORS.border}`,
   };
@@ -111,6 +115,77 @@ export function CalendarExpenseTable({
     gap: "0.5rem",
   };
 
+  const cardListStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.5rem",
+  };
+
+  const cardStyle: React.CSSProperties = {
+    backgroundColor: COLORS.background.main,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: "0.5rem",
+    overflow: "hidden",
+  };
+
+  const cardSummaryStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+    padding: "0.75rem",
+    cursor: "pointer",
+  };
+
+  const cardMainInfoStyle: React.CSSProperties = {
+    flex: 1,
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.15rem",
+  };
+
+  const cardDescStyle: React.CSSProperties = {
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    color: COLORS.text.primary,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  };
+
+  const cardDateStyle: React.CSSProperties = {
+    fontSize: TYPOGRAPHY.size.xs,
+    color: COLORS.text.secondary,
+  };
+
+  const cardAmountStyle: React.CSSProperties = {
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    color: COLORS.text.primary,
+    flexShrink: 0,
+  };
+
+  const cardChevronStyle = (isOpen: boolean): React.CSSProperties => ({
+    flexShrink: 0,
+    transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+    transition: "transform 0.2s ease",
+    color: COLORS.text.secondary,
+  });
+
+  const cardDetailStyle: React.CSSProperties = {
+    padding: "0 0.75rem 0.75rem",
+    borderTop: `1px solid ${COLORS.border}`,
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.75rem",
+  };
+
+  const cardCategoryRowStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    color: COLORS.text.primary,
+    paddingTop: "0.75rem",
+  };
+
   if (expenses.length === 0) {
     return (
       <div style={tableStyle}>
@@ -123,58 +198,134 @@ export function CalendarExpenseTable({
 
   return (
     <>
-      <table style={tableStyle}>
-        <thead style={theadStyle}>
-          <tr>
-            <th style={thStyle}>Date</th>
-            <th style={thStyle}>Description</th>
-            <th style={thStyle}>Category</th>
-            <th style={thStyle}>Amount</th>
-            <th style={{ ...thStyle, textAlign: "center" }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentExpenses.map((expense) => (
-            <tr key={expense.id}>
-              <td style={tdStyle}>{formatDate(new Date(expense.date))}</td>
-              <td style={tdStyle}>{expense.description}</td>
-              <td style={tdStyle}>
-                <span
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
+      {isMobile ? (
+        <div style={cardListStyle}>
+          {currentExpenses.map((expense) => {
+            const isExpanded = expandedId === expense.id;
+            return (
+              <div key={expense.id} style={cardStyle}>
+                <div
+                  style={cardSummaryStyle}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() =>
+                    setExpandedId(isExpanded ? null : expense.id)
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setExpandedId(isExpanded ? null : expense.id);
+                    }
                   }}
                 >
                   <span>{getCategoryEmoji(expense.category)}</span>
-                  <span>{expense.category}</span>
-                </span>
-              </td>
-              <td style={{ ...tdStyle, textAlign: "left", fontWeight: 600 }}>
-                {formatCurrency(expense.amount)}
-              </td>
-              <td style={{ ...tdStyle, textAlign: "center" }}>
-                <div style={actionButtonsStyle}>
-                  <Button
-                    variant="secondary"
-                    size="small"
-                    onClick={() => handleEdit(expense)}
+                  <div style={cardMainInfoStyle}>
+                    <span style={cardDescStyle}>{expense.description}</span>
+                    <span style={cardDateStyle}>
+                      {formatDate(new Date(expense.date))}
+                    </span>
+                  </div>
+                  <span style={cardAmountStyle}>
+                    {formatCurrency(expense.amount)}
+                  </span>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    style={cardChevronStyle(isExpanded)}
                   >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="small"
-                    onClick={() => handleDelete(expense)}
-                  >
-                    Delete
-                  </Button>
+                    <path d="M8 11l-5-5h10z" />
+                  </svg>
                 </div>
-              </td>
+                <AnimatedCollapse isOpen={isExpanded}>
+                  <div style={cardDetailStyle}>
+                    <div style={cardCategoryRowStyle}>
+                      <span>Category:</span>
+                      <strong>{expense.category}</strong>
+                    </div>
+                    <div style={actionButtonsStyle}>
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        onClick={() => handleEdit(expense)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="small"
+                        onClick={() => handleDelete(expense)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </AnimatedCollapse>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <table style={tableStyle}>
+          <thead style={theadStyle}>
+            <tr>
+              <th style={thStyle}>Date</th>
+              <th style={thStyle}>Description</th>
+              <th style={thStyle}>Category</th>
+              <th style={thStyle}>Amount</th>
+              <th style={{ ...thStyle, textAlign: "center" }}>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {currentExpenses.map((expense) => (
+              <tr key={expense.id}>
+                <td style={tdStyle}>{formatDate(new Date(expense.date))}</td>
+                <td style={tdStyle}>{expense.description}</td>
+                <td style={tdStyle}>
+                  <span
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <span>{getCategoryEmoji(expense.category)}</span>
+                    <span>{expense.category}</span>
+                  </span>
+                </td>
+                <td
+                  style={{
+                    ...tdStyle,
+                    textAlign: "left",
+                    fontWeight: TYPOGRAPHY.weight.semibold,
+                  }}
+                >
+                  {formatCurrency(expense.amount)}
+                </td>
+                <td style={{ ...tdStyle, textAlign: "center" }}>
+                  <div style={actionButtonsStyle}>
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      onClick={() => handleEdit(expense)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="small"
+                      onClick={() => handleDelete(expense)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <Pagination
         currentPage={currentPage}
