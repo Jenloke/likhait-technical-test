@@ -1,36 +1,46 @@
 /**
  * Vibes Color System
- * Color palette from freee/vibes design system
+ *
+ * Every value here is a CSS custom property reference, not a literal hex
+ * string — the actual hex values live in `../theme.css` as a `:root`
+ * (default) block plus one `[data-theme="..."]` override block per theme
+ * (see `themes.ts` for the theme registry, `hooks/useTheme.ts` for how the
+ * active theme gets applied). Keeping this object's shape/keys unchanged
+ * means every existing call site (`COLORS.primary.p05`, etc.) keeps working
+ * untouched — the browser resolves the var() live, so switching the
+ * `data-theme` attribute on <html> reskins the whole app with no
+ * component-level code changes.
  */
 
 export const COLORS = {
-  // Primary colors (Blue)
+  // Primary colors (brand accent ramp)
   primary: {
-    p01: "#ebf3ff",
-    p02: "#dce8ff",
-    p03: "#aac8ff",
-    p04: "#73a5ff",
-    p05: "#2864f0",
-    p06: "#3264dc",
-    p07: "#285ac8",
-    p08: "#1e46aa",
-    p09: "#23418c",
-    p10: "#143278",
+    p01: "var(--ex-primary-p01)",
+    p02: "var(--ex-primary-p02)",
+    p03: "var(--ex-primary-p03)",
+    p04: "var(--ex-primary-p04)",
+    p05: "var(--ex-primary-p05)",
+    p06: "var(--ex-primary-p06)",
+    p07: "var(--ex-primary-p07)",
+    p08: "var(--ex-primary-p08)",
+    p09: "var(--ex-primary-p09)",
+    p10: "var(--ex-primary-p10)",
   },
-  // Secondary colors (Gray)
+  // Secondary colors (neutral ramp)
   secondary: {
-    s01: "#f7f5f5",
-    s02: "#f0eded",
-    s03: "#e9e7e7",
-    s04: "#e1dcdc",
-    s05: "#d7d2d2",
-    s06: "#bebaba",
-    s07: "#aaa7a7",
-    s08: "#8c8989",
-    s09: "#6e6b6b",
-    s10: "#464343",
+    s01: "var(--ex-secondary-s01)",
+    s02: "var(--ex-secondary-s02)",
+    s03: "var(--ex-secondary-s03)",
+    s04: "var(--ex-secondary-s04)",
+    s05: "var(--ex-secondary-s05)",
+    s06: "var(--ex-secondary-s06)",
+    s07: "var(--ex-secondary-s07)",
+    s08: "var(--ex-secondary-s08)",
+    s09: "var(--ex-secondary-s09)",
+    s10: "var(--ex-secondary-s10)",
   },
-  // Red
+  // Red — categorical hue, intentionally identical across all themes (see
+  // module comment above): encodes category/status meaning, not brand chrome.
   red: {
     re02: "#fad2d7",
     re04: "#f07882",
@@ -89,14 +99,21 @@ export const COLORS = {
   danger: "#dc1e32", // Maps to red.re05
   info: "#00b9b9", // Maps to blueGreen.bg05
   text: {
-    primary: "#464343", // Maps to secondary.s10
-    secondary: "#6e6b6b", // Maps to secondary.s09
-    light: "#aaa7a7", // Maps to secondary.s07
+    primary: "var(--ex-text-primary)",
+    secondary: "var(--ex-text-secondary)",
+    light: "var(--ex-text-light)",
   },
-  border: "#e1dcdc", // Maps to secondary.s04
+  border: "var(--ex-border)",
   background: {
-    main: "#ffffff",
-    card: "#f7f5f5", // Maps to secondary.s01
-    hover: "#f0eded", // Maps to secondary.s02
+    main: "var(--ex-background-main)",
+    card: "var(--ex-background-card)",
+    hover: "var(--ex-background-hover)",
   },
+  // Text/icon color to place on top of a solid accent fill (primary button
+  // backgrounds, the selected month cell, etc.) — kept separate from
+  // `text.*` because those are always read against `background.*`, while
+  // this is read against `primary.p05`/`p06` or `danger`/`success`. Themed
+  // per-theme so dark themes (whose accent fill is often already light/
+  // saturated) can pick a dark on-accent color instead of white-on-white.
+  onAccent: "var(--ex-on-accent)",
 } as const;

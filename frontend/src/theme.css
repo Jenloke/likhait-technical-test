@@ -1,0 +1,160 @@
+/**
+ * Theme palettes.
+ *
+ * `:root` holds the default theme (identical to the original hardcoded
+ * values in constants/colors.ts before theming existed). Each
+ * `[data-theme="..."]` block below overrides the same set of custom
+ * properties for one of the picker's themes (see constants/themes.ts for
+ * the theme registry and hooks/useTheme.ts for how `data-theme` gets set
+ * on <html>). Only brand/surface tokens vary per theme — the categorical
+ * hue ramps (red/orange/yellow/yellowGreen/green/blueGreen) used for
+ * category color-coding are intentionally NOT here; they stay constant in
+ * constants/colors.ts across all themes.
+ */
+
+:root {
+  --ex-primary-p01: #ebf3ff;
+  --ex-primary-p02: #dce8ff;
+  --ex-primary-p03: #aac8ff;
+  --ex-primary-p04: #73a5ff;
+  --ex-primary-p05: #2864f0;
+  --ex-primary-p06: #3264dc;
+  --ex-primary-p07: #285ac8;
+  --ex-primary-p08: #1e46aa;
+  --ex-primary-p09: #23418c;
+  --ex-primary-p10: #143278;
+
+  --ex-secondary-s01: #f7f5f5;
+  --ex-secondary-s02: #f0eded;
+  --ex-secondary-s03: #e9e7e7;
+  --ex-secondary-s04: #e1dcdc;
+  --ex-secondary-s05: #d7d2d2;
+  --ex-secondary-s06: #bebaba;
+  --ex-secondary-s07: #aaa7a7;
+  --ex-secondary-s08: #8c8989;
+  --ex-secondary-s09: #6e6b6b;
+  --ex-secondary-s10: #464343;
+
+  --ex-text-primary: #464343;
+  --ex-text-secondary: #6e6b6b;
+  --ex-text-light: #aaa7a7;
+
+  --ex-border: #e1dcdc;
+
+  --ex-background-main: #ffffff;
+  --ex-background-card: #f7f5f5;
+  --ex-background-hover: #f0eded;
+
+  --ex-on-accent: #ffffff;
+}
+
+/* wavez — dark ocean: near-black navy/teal surfaces, glowing cyan accent */
+:root[data-theme="wavez"] {
+  --ex-primary-p01: #0b2733;
+  --ex-primary-p02: #10323f;
+  --ex-primary-p03: #15404f;
+  --ex-primary-p04: #1a4e5f;
+  --ex-primary-p05: #22a8c9;
+  --ex-primary-p06: #2bbdd6;
+  --ex-primary-p07: #1f97b3;
+  --ex-primary-p08: #3fd0e8;
+  --ex-primary-p09: #7de3f2;
+  --ex-primary-p10: #b3edf7;
+
+  --ex-secondary-s01: #071c26;
+  --ex-secondary-s02: #0c2530;
+  --ex-secondary-s03: #11303c;
+  --ex-secondary-s04: #173c49;
+  --ex-secondary-s05: #1e4856;
+  --ex-secondary-s06: #2c5f6e;
+  --ex-secondary-s07: #63909e;
+  --ex-secondary-s08: #9cc7d2;
+  --ex-secondary-s09: #c3e2ea;
+  --ex-secondary-s10: #eaf8fb;
+
+  --ex-text-primary: #dff5fb;
+  --ex-text-secondary: #9cd3e3;
+  --ex-text-light: #5a94a8;
+
+  --ex-border: #163f52;
+
+  --ex-background-main: #071c26;
+  --ex-background-card: #0d2733;
+  --ex-background-hover: #123444;
+
+  --ex-on-accent: #052229;
+}
+
+/* modern dolch — dark charcoal with a mint/teal accent */
+:root[data-theme="modern-dolch"] {
+  --ex-primary-p01: #26383a;
+  --ex-primary-p02: #2c4244;
+  --ex-primary-p03: #334f51;
+  --ex-primary-p04: #3a5c5e;
+  --ex-primary-p05: #4fa89e;
+  --ex-primary-p06: #5ec2b7;
+  --ex-primary-p07: #4aa79c;
+  --ex-primary-p08: #6ed4c8;
+  --ex-primary-p09: #7eddd3;
+  --ex-primary-p10: #a8ecdf;
+
+  --ex-secondary-s01: #2d2e30;
+  --ex-secondary-s02: #35363a;
+  --ex-secondary-s03: #3d3f43;
+  --ex-secondary-s04: #54585c;
+  --ex-secondary-s05: #63676c;
+  --ex-secondary-s06: #797d82;
+  --ex-secondary-s07: #9599a0;
+  --ex-secondary-s08: #b7bac0;
+  --ex-secondary-s09: #cfd2d7;
+  --ex-secondary-s10: #e3e6eb;
+
+  --ex-text-primary: #e3e6eb;
+  --ex-text-secondary: #b7bac0;
+  --ex-text-light: #797d82;
+
+  --ex-border: #54585c;
+
+  --ex-background-main: #2d2e30;
+  --ex-background-card: #35363a;
+  --ex-background-hover: #3d3f43;
+
+  --ex-on-accent: #133330;
+}
+
+/* bento — light warm theme: cream/parchment surfaces, terracotta accent */
+:root[data-theme="bento"] {
+  --ex-primary-p01: #fdece2;
+  --ex-primary-p02: #fbdcc9;
+  --ex-primary-p03: #f7c4a8;
+  --ex-primary-p04: #f2a87f;
+  --ex-primary-p05: #ec8552;
+  --ex-primary-p06: #e0703d;
+  --ex-primary-p07: #c85f30;
+  --ex-primary-p08: #a84f28;
+  --ex-primary-p09: #7a3a1e;
+  --ex-primary-p10: #522612;
+
+  --ex-secondary-s01: #fdf8f2;
+  --ex-secondary-s02: #faf1e4;
+  --ex-secondary-s03: #f5e6d3;
+  --ex-secondary-s04: #ecd9bd;
+  --ex-secondary-s05: #ddc4a0;
+  --ex-secondary-s06: #c7a97e;
+  --ex-secondary-s07: #a3835c;
+  --ex-secondary-s08: #8a6f57;
+  --ex-secondary-s09: #5f4a37;
+  --ex-secondary-s10: #4a3628;
+
+  --ex-text-primary: #4a3628;
+  --ex-text-secondary: #8a6f57;
+  --ex-text-light: #b89b7d;
+
+  --ex-border: #ecd9bd;
+
+  --ex-background-main: #fdf8f2;
+  --ex-background-card: #faf1e4;
+  --ex-background-hover: #f5e6d3;
+
+  --ex-on-accent: #ffffff;
+}
