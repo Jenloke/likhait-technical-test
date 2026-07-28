@@ -15,7 +15,16 @@ import { TYPOGRAPHY } from "../constants/typography";
 import { useIsMobile, useMediaQuery } from "../hooks/useMediaQuery";
 import { BREAKPOINTS } from "../constants/breakpoints";
 
-const HistoryPage: React.FC = () => {
+interface HistoryPageProps {
+  // Reports the currently viewed year/month up to the caller whenever it
+  // changes (including the initial value resolved on mount), so App can
+  // remember where History was left and restore it on the next visit
+  // instead of resetting to the current month every time the tab is
+  // re-entered.
+  onYearMonthChange?: (year: number, month: number) => void;
+}
+
+const HistoryPage: React.FC<HistoryPageProps> = ({ onYearMonthChange }) => {
   const isMobile = useIsMobile();
   // Below this, "Expense History" and the year nav no longer fit on one
   // line, so the header switches from a single space-between row (title
@@ -63,6 +72,11 @@ const HistoryPage: React.FC = () => {
 
   useEffect(() => {
     fetchExpenses();
+  }, [selectedYear, selectedMonth]);
+
+  useEffect(() => {
+    onYearMonthChange?.(selectedYear, selectedMonth);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYear, selectedMonth]);
 
   const fetchExpenses = async () => {

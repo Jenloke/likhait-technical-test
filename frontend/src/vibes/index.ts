@@ -11,3 +11,5 @@ export { ColumnBase } from "./ColumnBase";
 export { ItemTable } from "./ItemTable";
 export { Pagination } from "./Pagination";
 export { AnimatedCollapse } from "./AnimatedCollapse";
+export { PieChart } from "./PieChart";
+export type { PieChartDatum } from "./PieChart";

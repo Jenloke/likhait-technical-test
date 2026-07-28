@@ -10,7 +10,11 @@ test("a backdated expense is ranked by its date, not by when it was created", as
   const laterDescription = `E2E later ${suffix}`;
   const earlierDescription = `E2E earlier ${suffix}`;
 
+  // The app now lands on the Dashboard regardless of URL query params, so
+  // History (and the year/month it reads from those params) needs an
+  // explicit nav click rather than being visible straight off goto.
   await page.goto("/?year=2020&month=1");
+  await page.getByRole("button", { name: "History", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Expense History" })).toBeVisible();
 
   const addExpense = async (description: string, date: string) => {
