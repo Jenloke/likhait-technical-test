@@ -5,6 +5,7 @@ import YearNavigation from "../components/YearNavigation";
 import { MonthNavigation } from "../components/MonthNavigation";
 import CategoryBreakdown from "../components/CategoryBreakdown";
 import { CalendarExpenseTable } from "../components/CalendarExpenseTable";
+import { CategoryFilter } from "../components/CategoryFilter";
 import { ExpenseForm } from "../components/ExpenseForm";
 import { AddCategoryModal } from "../components/AddCategoryModal";
 import { useCategories } from "../hooks/useCategories";
@@ -19,6 +20,7 @@ const HistoryPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const { categories: allCategories, addCategory } = useCategories();
 
   // Get year and month from URL params, default to current date if not provided
@@ -90,8 +92,15 @@ const HistoryPage: React.FC = () => {
     }
   };
 
+  const filteredExpenses =
+    selectedCategories.length === 0
+      ? expenses
+      : expenses.filter((expense) =>
+          selectedCategories.includes(expense.category),
+        );
+
   // Calculate category breakdown
-  const categoryData = expenses.reduce(
+  const categoryData = filteredExpenses.reduce(
     (acc, expense) => {
       const category = expense.category || "Uncategorized";
       if (!acc[category]) {
@@ -179,6 +188,12 @@ const HistoryPage: React.FC = () => {
         onMonthChange={handleMonthChange}
       />
 
+      <CategoryFilter
+        categories={allCategories}
+        selected={selectedCategories}
+        onChange={setSelectedCategories}
+      />
+
       <div>
         {loading ? (
           <div style={loadingStyle}>Loading...</div>
@@ -191,7 +206,7 @@ const HistoryPage: React.FC = () => {
             />
             <div style={{ marginTop: "32px" }}>
               <CalendarExpenseTable
-                expenses={expenses}
+                expenses={filteredExpenses}
                 onExpenseUpdated={fetchExpenses}
               />
             </div>
