@@ -10,8 +10,11 @@ import { AddCategoryModal } from "../components/AddCategoryModal";
 import { useCategories } from "../hooks/useCategories";
 import { Modal, Button } from "../vibes";
 import { COLORS } from "../constants/colors";
+import { TYPOGRAPHY } from "../constants/typography";
+import { useIsMobile } from "../hooks/useMediaQuery";
 
 const HistoryPage: React.FC = () => {
+  const isMobile = useIsMobile();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -108,27 +111,31 @@ const HistoryPage: React.FC = () => {
   const totalCount = categories.reduce((sum, cat) => sum + cat.count, 0);
 
   const pageStyle: React.CSSProperties = {
-    padding: "48px 64px",
+    padding: isMobile ? "20px 16px" : "48px 64px",
     minHeight: "100vh",
     background: COLORS.secondary.s01,
   };
 
   const headerStyle: React.CSSProperties = {
     display: "flex",
+    flexWrap: "wrap",
     alignItems: "center",
-    gap: "24px",
+    gap: "16px",
     justifyContent: "space-between",
   };
 
   const leftHeaderStyle: React.CSSProperties = {
     display: "flex",
+    flexWrap: "wrap",
     alignItems: "center",
-    gap: "24px",
+    gap: isMobile ? "12px" : "24px",
   };
 
   const titleStyle: React.CSSProperties = {
-    fontSize: "40px",
-    fontWeight: 700,
+    fontSize: isMobile
+      ? TYPOGRAPHY.role.sectionTitle.size
+      : TYPOGRAPHY.role.pageTitle.size,
+    fontWeight: TYPOGRAPHY.role.pageTitle.weight,
     color: COLORS.secondary.s10,
     margin: 0,
     flexShrink: 0,
@@ -139,7 +146,7 @@ const HistoryPage: React.FC = () => {
     justifyContent: "center",
     alignItems: "center",
     padding: "48px",
-    fontSize: "18px",
+    fontSize: TYPOGRAPHY.size.md,
     color: COLORS.secondary.s08,
   };
 
