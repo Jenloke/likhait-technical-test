@@ -6,6 +6,7 @@ import React from "react";
 import { COLORS } from "../constants/colors";
 import { TYPOGRAPHY } from "../constants/typography";
 import { useIsMobile, useMediaQuery } from "../hooks/useMediaQuery";
+import { BREAKPOINTS } from "../constants/breakpoints";
 
 interface MonthNavigationProps {
   currentMonth: number;
@@ -54,7 +55,9 @@ export function MonthNavigation({
   // The 12-button grid only needs its own, narrower breakpoint — independent
   // of useIsMobile (1023px), which also drives the sidebar/table/breakdown
   // layouts and shouldn't shift just because this grid can fit sooner.
-  const showMonthGrid = useMediaQuery("(min-width: 768px)");
+  const showMonthGrid = useMediaQuery(
+    `(min-width: ${BREAKPOINTS.tablet}px)`,
+  );
 
   const handlePreviousMonth = () => {
     if (currentMonth === 1) {

@@ -13,13 +13,16 @@ import { Modal, Button } from "../vibes";
 import { COLORS } from "../constants/colors";
 import { TYPOGRAPHY } from "../constants/typography";
 import { useIsMobile, useMediaQuery } from "../hooks/useMediaQuery";
+import { BREAKPOINTS } from "../constants/breakpoints";
 
 const HistoryPage: React.FC = () => {
   const isMobile = useIsMobile();
   // Below this, "Expense History" and the year nav no longer fit on one
   // line, so the header switches from a single space-between row (title
   // left, year right) to title and year stacked on their own centered rows.
-  const isCompactMobile = useMediaQuery("(max-width: 430px)");
+  const isCompactMobile = useMediaQuery(
+    `(max-width: ${BREAKPOINTS.compactMobile}px)`,
+  );
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
