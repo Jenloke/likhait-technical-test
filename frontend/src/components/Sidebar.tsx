@@ -158,7 +158,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     padding: "16px 0",
   };
 
-  const navItemStyle: React.CSSProperties = {
+  const getNavItemStyle = (isActive: boolean): React.CSSProperties => ({
     width: "100%",
     padding: collapsed ? "16px" : "16px 24px",
     display: "flex",
@@ -168,7 +168,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     // a fixed gap next to a zero-width (but still present) text span was
     // pushing the icon off-center in the collapsed 80px rail.
     gap: collapsed ? "0px" : "16px",
-    background: currentPage === "history" ? COLORS.primary.p03 : "transparent",
+    background: isActive ? COLORS.primary.p03 : "transparent",
     border: "none",
     cursor: "pointer",
     fontSize: TYPOGRAPHY.size.md,
@@ -176,7 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     color: COLORS.primary.p09,
     textAlign: "left",
     transition: "background 0.2s, gap 0.25s ease",
-  };
+  });
 
   const navTextStyle: React.CSSProperties = {
     display: "inline-block",
@@ -257,7 +257,35 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         <nav style={navStyle}>
           <button
-            style={navItemStyle}
+            style={getNavItemStyle(currentPage === "dashboard")}
+            onClick={() => handleNavigate("dashboard")}
+            onMouseEnter={(e) => {
+              if (currentPage !== "dashboard") {
+                e.currentTarget.style.background = COLORS.primary.p02;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPage !== "dashboard") {
+                e.currentTarget.style.background = "transparent";
+              }
+            }}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              style={{ flexShrink: 0 }}
+            >
+              <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+              <path d="M22 12A10 10 0 0 0 12 2v10z" />
+            </svg>
+            <span style={navTextStyle}>Dashboard</span>
+          </button>
+          <button
+            style={getNavItemStyle(currentPage === "history")}
             onClick={() => handleNavigate("history")}
             onMouseEnter={(e) => {
               if (currentPage !== "history") {

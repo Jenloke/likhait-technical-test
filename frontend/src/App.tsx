@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import Sidebar from "./components/Sidebar";
+import DashboardPage from "./pages/DashboardPage";
 import HistoryPage from "./pages/HistoryPage";
 import { COLORS } from "./constants/colors";
 import { TYPOGRAPHY } from "./constants/typography";
 import { useIsMobile } from "./hooks/useMediaQuery";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("history");
+  const [currentPage, setCurrentPage] = useState("dashboard");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -96,6 +97,7 @@ function App() {
         onCloseMobile={() => setIsMobileDrawerOpen(false)}
       />
       <main style={mainStyle}>
+        {currentPage === "dashboard" && <DashboardPage />}
         {currentPage === "history" && <HistoryPage />}
       </main>
     </div>
