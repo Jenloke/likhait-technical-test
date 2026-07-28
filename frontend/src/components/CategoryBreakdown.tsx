@@ -32,7 +32,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
   };
 
   const containerStyle: React.CSSProperties = {
-    background: "white",
+    background: COLORS.background.main,
     borderRadius: "12px",
     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
     overflow: "hidden",
@@ -111,7 +111,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "white",
+    background: COLORS.background.main,
     borderRadius: "10px",
     boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
   };

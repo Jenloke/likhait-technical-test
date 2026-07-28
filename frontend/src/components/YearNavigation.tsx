@@ -43,7 +43,7 @@ export function YearNavigation({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "white",
+    background: COLORS.background.main,
     border: `1px solid ${COLORS.secondary.s04}`,
     borderRadius: "8px",
     cursor: "pointer",
@@ -76,7 +76,7 @@ export function YearNavigation({
           e.currentTarget.style.borderColor = COLORS.secondary.s05;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = "white";
+          e.currentTarget.style.background = COLORS.background.main;
           e.currentTarget.style.borderColor = COLORS.secondary.s04;
         }}
       >
@@ -92,7 +92,7 @@ export function YearNavigation({
           e.currentTarget.style.borderColor = COLORS.secondary.s05;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = "white";
+          e.currentTarget.style.background = COLORS.background.main;
           e.currentTarget.style.borderColor = COLORS.secondary.s04;
         }}
       >

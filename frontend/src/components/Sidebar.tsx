@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { COLORS } from "../constants/colors";
 import { TYPOGRAPHY } from "../constants/typography";
 import { useIsMobile } from "../hooks/useMediaQuery";
+import { ThemeModal } from "./ThemeModal";
 
 interface SidebarProps {
   onNavigate?: (page: string) => void;
@@ -21,6 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const isMobile = useIsMobile();
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
   // The drawer is always "expanded" content-wise on mobile; only its
   // slide-in/out state matters there. On desktop, isCollapsed drives width.
   const collapsed = isMobile ? false : isCollapsed;
@@ -77,14 +79,17 @@ const Sidebar: React.FC<SidebarProps> = ({
     width: isMobile ? "40px" : "48px",
     height: isMobile ? "40px" : "48px",
     background: COLORS.primary.p07,
+    border: "none",
     borderRadius: "12px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: isMobile ? "22px" : "28px",
     fontWeight: TYPOGRAPHY.weight.bold,
-    color: "white",
+    color: COLORS.onAccent,
     flexShrink: 0,
+    cursor: "pointer",
+    padding: 0,
   };
 
   const logoTextStyle: React.CSSProperties = {
@@ -121,7 +126,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     transform: "translateY(-50%)",
     width: "32px",
     height: "32px",
-    background: "white",
+    background: COLORS.background.main,
     border: `1px solid ${COLORS.secondary.s04}`,
     borderRadius: "50%",
     display: "flex",
@@ -199,7 +204,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       <aside style={sidebarStyle}>
         <div style={headerStyle}>
           <div style={logoStyle}>
-            <span style={logoIconStyle}>$</span>
+            <button
+              style={logoIconStyle}
+              aria-label="Open theme picker"
+              onClick={() => setIsThemeModalOpen(true)}
+            >
+              $
+            </button>
             <div style={logoTextStyle}>
               <div style={logoTitleStyle}>Expense Tracker</div>
             </div>
@@ -224,7 +235,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               e.currentTarget.style.background = COLORS.secondary.s02;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "white";
+              e.currentTarget.style.background = COLORS.background.main;
             }}
           >
             <svg
@@ -232,7 +243,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               height="16"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#464343"
+              stroke={COLORS.text.primary}
               strokeWidth="2"
               style={{
                 transform: collapsed ? "rotate(180deg)" : "rotate(0deg)",
@@ -277,6 +288,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </nav>
       </aside>
+      <ThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+      />
     </>
   );
 };

@@ -25,7 +25,7 @@ export function Button({
       case "primary":
         return {
           backgroundColor: COLORS.primary.p06,
-          color: "white",
+          color: COLORS.onAccent,
           border: "none",
         };
       case "secondary":
@@ -36,6 +36,9 @@ export function Button({
         };
       case "danger":
         return {
+          // COLORS.danger is a fixed (non-themed) saturated red — white
+          // always contrasts against it, unlike COLORS.onAccent which is
+          // tuned for the *themed* primary accent fill below.
           backgroundColor: COLORS.danger,
           color: "white",
           border: "none",

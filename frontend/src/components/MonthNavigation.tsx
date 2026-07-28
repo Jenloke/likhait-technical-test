@@ -104,7 +104,7 @@ export function MonthNavigation({
     cursor: "pointer",
     transition: "all 0.2s",
     background: COLORS.primary.p05,
-    color: "white",
+    color: COLORS.onAccent,
     boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
     minWidth: "40px",
     display: "flex",
@@ -125,8 +125,9 @@ export function MonthNavigation({
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
-    background: currentMonth === month ? COLORS.primary.p05 : "white",
-    color: currentMonth === month ? "white" : COLORS.secondary.s08,
+    background:
+      currentMonth === month ? COLORS.primary.p05 : COLORS.background.main,
+    color: currentMonth === month ? COLORS.onAccent : COLORS.secondary.s08,
     boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
   });
 
@@ -144,7 +145,7 @@ export function MonthNavigation({
     borderRadius: "8px",
     cursor: "pointer",
     background: COLORS.primary.p05,
-    color: "white",
+    color: COLORS.onAccent,
     boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
     textAlign: "center",
     textAlignLast: "center",
@@ -192,7 +193,7 @@ export function MonthNavigation({
               }}
               onMouseLeave={(e) => {
                 if (currentMonth !== month.value) {
-                  e.currentTarget.style.background = "white";
+                  e.currentTarget.style.background = COLORS.background.main;
                 }
               }}
             >
