@@ -4,6 +4,7 @@
 
 import React from "react";
 import { COLORS } from "../constants/colors";
+import { TYPOGRAPHY } from "../constants/typography";
 import { Button } from "./Button";
 
 interface PaginationProps {
@@ -27,7 +28,7 @@ export function Pagination({
 
   const pageInfoStyle: React.CSSProperties = {
     color: COLORS.text.secondary,
-    fontSize: "0.875rem",
+    fontSize: TYPOGRAPHY.size.sm,
     margin: "0 1rem",
   };
 

@@ -4,6 +4,7 @@
 
 import React from "react";
 import { COLORS } from "../constants/colors";
+import { TYPOGRAPHY } from "../constants/typography";
 
 interface SelectBoxProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
@@ -31,14 +32,14 @@ export function SelectBox({
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: "0.875rem",
-    fontWeight: 600,
+    fontSize: TYPOGRAPHY.size.sm,
+    fontWeight: TYPOGRAPHY.weight.semibold,
     color: COLORS.text.primary,
   };
 
   const selectStyle: React.CSSProperties = {
     padding: "0.5rem 0.75rem",
-    fontSize: "1rem",
+    fontSize: TYPOGRAPHY.size.base,
     border: `1px solid ${error ? COLORS.danger : COLORS.border}`,
     borderRadius: "0.375rem",
     outline: "none",
@@ -49,7 +50,7 @@ export function SelectBox({
   };
 
   const errorStyle: React.CSSProperties = {
-    fontSize: "0.75rem",
+    fontSize: TYPOGRAPHY.size.xs,
     color: COLORS.danger,
     marginTop: "-0.25rem",
   };

@@ -4,6 +4,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { COLORS } from "../constants/colors";
+import { TYPOGRAPHY } from "../constants/typography";
 
 interface ModalProps {
   isOpen: boolean;
@@ -97,19 +98,19 @@ export function Modal({
   };
 
   const titleStyle: React.CSSProperties = {
-    fontSize: "1.25rem",
-    fontWeight: 700,
+    fontSize: TYPOGRAPHY.role.modalTitle.size,
+    fontWeight: TYPOGRAPHY.role.modalTitle.weight,
     color: COLORS.text.primary,
   };
 
   const closeButtonStyle: React.CSSProperties = {
     background: "none",
     border: "none",
-    fontSize: "1.5rem",
+    fontSize: TYPOGRAPHY.size.xl,
     cursor: "pointer",
     color: COLORS.text.secondary,
     padding: "0.25rem",
-    lineHeight: 1,
+    lineHeight: TYPOGRAPHY.lineHeight.none,
   };
 
   return (

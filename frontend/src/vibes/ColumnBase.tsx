@@ -4,6 +4,7 @@
 
 import React from "react";
 import { COLORS } from "../constants/colors";
+import { TYPOGRAPHY } from "../constants/typography";
 
 interface ColumnBaseProps {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ export function ColumnBase({
     padding: "0.75rem",
     textAlign: align,
     width,
-    fontWeight: isHeader ? 600 : 400,
+    fontWeight: isHeader ? TYPOGRAPHY.weight.semibold : TYPOGRAPHY.weight.regular,
     color: isHeader ? COLORS.text.primary : COLORS.text.primary,
     backgroundColor: isHeader ? COLORS.background.card : "transparent",
     borderBottom: `1px solid ${COLORS.border}`,

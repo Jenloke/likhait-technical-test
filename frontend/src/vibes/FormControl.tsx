@@ -4,6 +4,7 @@
 
 import React from "react";
 import { COLORS } from "../constants/colors";
+import { TYPOGRAPHY } from "../constants/typography";
 
 interface FormControlProps {
   label?: string;
@@ -28,8 +29,8 @@ export function FormControl({
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: "0.875rem",
-    fontWeight: 600,
+    fontSize: TYPOGRAPHY.size.sm,
+    fontWeight: TYPOGRAPHY.weight.semibold,
     color: COLORS.text.primary,
     display: "flex",
     alignItems: "center",
@@ -37,7 +38,7 @@ export function FormControl({
   };
 
   const errorStyle: React.CSSProperties = {
-    fontSize: "0.75rem",
+    fontSize: TYPOGRAPHY.size.xs,
     color: COLORS.danger,
     marginTop: "-0.25rem",
   };
