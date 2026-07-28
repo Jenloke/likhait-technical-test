@@ -11,6 +11,33 @@ function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const isMobile = useIsMobile();
+  // The last year/month History was showing, remembered across navigating
+  // away and back so re-entering History restores that position instead of
+  // resetting to the current month. Null until History has been visited at
+  // least once in this session.
+  const [historyYearMonth, setHistoryYearMonth] = useState<{
+    year: number;
+    month: number;
+  } | null>(null);
+
+  const handleNavigate = (page: string) => {
+    if (page === "history" && historyYearMonth) {
+      const params = new URLSearchParams();
+      params.set("year", String(historyYearMonth.year));
+      params.set("month", String(historyYearMonth.month));
+      window.history.replaceState(
+        {},
+        "",
+        `${window.location.pathname}?${params.toString()}`,
+      );
+    } else if (page === "dashboard") {
+      // The year/month query params belong to History's URL state — strip
+      // them so the address bar doesn't keep showing History's position
+      // while looking at the Dashboard.
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+    setCurrentPage(page);
+  };
 
   const appStyle: React.CSSProperties = {
     display: "flex",
@@ -90,7 +117,7 @@ function App() {
       )}
       <Sidebar
         currentPage={currentPage}
-        onNavigate={setCurrentPage}
+        onNavigate={handleNavigate}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={handleToggleSidebar}
         isMobileOpen={isMobileDrawerOpen}
@@ -98,7 +125,13 @@ function App() {
       />
       <main style={mainStyle}>
         {currentPage === "dashboard" && <DashboardPage />}
-        {currentPage === "history" && <HistoryPage />}
+        {currentPage === "history" && (
+          <HistoryPage
+            onYearMonthChange={(year, month) =>
+              setHistoryYearMonth({ year, month })
+            }
+          />
+        )}
       </main>
     </div>
   );
