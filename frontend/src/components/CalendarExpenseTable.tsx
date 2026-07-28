@@ -2,14 +2,14 @@
  * Calendar expense table component
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Expense, ExpenseFormData } from "../types";
 import { formatCurrency, formatDate } from "../utils/expenseUtils";
 import { useCategories } from "../hooks/useCategories";
 import { useIsMobile } from "../hooks/useMediaQuery";
 import { COLORS } from "../constants/colors";
 import { TYPOGRAPHY } from "../constants/typography";
-import { AnimatedCollapse, Button, Modal, Pagination } from "../vibes";
+import { AnimatedCollapse, Button, Modal, Pagination, SelectBox } from "../vibes";
 import { ExpenseForm } from "./ExpenseForm.tsx";
 import { deleteExpense, updateExpense } from "../services/api";
 
@@ -18,13 +18,14 @@ interface CalendarExpenseTableProps {
   onExpenseUpdated: () => void;
 }
 
-const ITEMS_PER_PAGE = 10;
+const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
 export function CalendarExpenseTable({
   expenses,
   onExpenseUpdated,
 }: CalendarExpenseTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
@@ -36,10 +37,21 @@ export function CalendarExpenseTable({
   const getCategoryEmoji = (category: string) =>
     emojiByName.get(category) || "📦";
 
-  const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const totalPages = Math.ceil(expenses.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
   const currentExpenses = expenses.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
 
   const handleEdit = (expense: Expense) => {
     setEditingExpense(expense);
@@ -186,6 +198,14 @@ export function CalendarExpenseTable({
     paddingTop: "0.75rem",
   };
 
+  const paginationBarStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    gap: "0.5rem",
+  };
+
   if (expenses.length === 0) {
     return (
       <div style={tableStyle}>
@@ -327,11 +347,23 @@ export function CalendarExpenseTable({
         </table>
       )}
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
+      <div style={paginationBarStyle}>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+        <SelectBox
+          label="Rows"
+          value={String(pageSize)}
+          onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+          options={PAGE_SIZE_OPTIONS.map((size) => ({
+            value: String(size),
+            label: String(size),
+          }))}
+          includePlaceholder={false}
+        />
+      </div>
 
       <Modal
         isOpen={isEditModalOpen}

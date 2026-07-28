@@ -11,6 +11,7 @@ interface SelectBoxProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   error?: string;
   fullWidth?: boolean;
   options: Array<{ value: string; label: string }>;
+  includePlaceholder?: boolean;
 }
 
 export function SelectBox({
@@ -19,6 +20,7 @@ export function SelectBox({
   fullWidth = false,
   options,
   id,
+  includePlaceholder = true,
   ...props
 }: SelectBoxProps) {
   const generatedId = React.useId();
@@ -63,7 +65,7 @@ export function SelectBox({
         </label>
       )}
       <select id={selectId} style={selectStyle} {...props}>
-        <option value="">Select...</option>
+        {includePlaceholder && <option value="">Select...</option>}
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
