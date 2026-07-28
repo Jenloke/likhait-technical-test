@@ -16,6 +16,10 @@ import { deleteExpense, updateExpense } from "../services/api";
 interface CalendarExpenseTableProps {
   expenses: Expense[];
   onExpenseUpdated: () => void;
+  // Opaque value the caller changes whenever a filter (not just the
+  // underlying data) changes, so pagination jumps back to page 1 instead of
+  // clamping onto whatever page happened to still be in range.
+  resetPaginationKey?: string;
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -23,6 +27,7 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50];
 export function CalendarExpenseTable({
   expenses,
   onExpenseUpdated,
+  resetPaginationKey,
 }: CalendarExpenseTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
@@ -47,6 +52,10 @@ export function CalendarExpenseTable({
       setCurrentPage(totalPages);
     }
   }, [totalPages, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [resetPaginationKey]);
 
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);

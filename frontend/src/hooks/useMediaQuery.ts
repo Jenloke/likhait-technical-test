@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { BREAKPOINTS } from "../constants/breakpoints";
 
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
@@ -25,5 +26,5 @@ export function useMediaQuery(query: string): boolean {
 // grid that doesn't reflow below its content's intrinsic width — below this,
 // that combination no longer fits and the compact layout takes over instead.
 export function useIsMobile(): boolean {
-  return useMediaQuery("(max-width: 1023px)");
+  return useMediaQuery(`(max-width: ${BREAKPOINTS.laptop - 1}px)`);
 }

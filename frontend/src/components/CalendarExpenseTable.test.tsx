@@ -141,6 +141,38 @@ describe("CalendarExpenseTable", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("jumps back to page 1 when resetPaginationKey changes, even if the new page would still be in range", async () => {
+    const user = userEvent.setup();
+    const expenses = Array.from({ length: 15 }, (_, i) =>
+      makeExpense({ id: i + 1, description: `Expense ${i + 1}` }),
+    );
+
+    const { rerender } = render(
+      <CalendarExpenseTable
+        expenses={expenses}
+        onExpenseUpdated={vi.fn()}
+        resetPaginationKey="Food"
+      />,
+    );
+    await waitFor(() => expect(api.fetchCategories).toHaveBeenCalled());
+
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByText("Expense 11")).toBeInTheDocument();
+
+    // Same 15-row list, so a page-count clamp alone wouldn't move anything —
+    // only the changed key should force it back to page 1.
+    rerender(
+      <CalendarExpenseTable
+        expenses={expenses}
+        onExpenseUpdated={vi.fn()}
+        resetPaginationKey="Bills"
+      />,
+    );
+
+    expect(screen.getByText("Expense 1")).toBeInTheDocument();
+    expect(screen.queryByText("Expense 11")).not.toBeInTheDocument();
+  });
+
   it("opens the edit modal pre-filled with the selected expense", async () => {
     const user = userEvent.setup();
     render(
