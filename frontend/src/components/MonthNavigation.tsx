@@ -5,7 +5,7 @@
 import React from "react";
 import { COLORS } from "../constants/colors";
 import { TYPOGRAPHY } from "../constants/typography";
-import { useIsMobile } from "../hooks/useMediaQuery";
+import { useIsMobile, useMediaQuery } from "../hooks/useMediaQuery";
 
 interface MonthNavigationProps {
   currentMonth: number;
@@ -51,6 +51,10 @@ export function MonthNavigation({
   onMonthChange,
 }: MonthNavigationProps) {
   const isMobile = useIsMobile();
+  // The 12-button grid only needs its own, narrower breakpoint — independent
+  // of useIsMobile (1023px), which also drives the sidebar/table/breakdown
+  // layouts and shouldn't shift just because this grid can fit sooner.
+  const showMonthGrid = useMediaQuery("(min-width: 768px)");
 
   const handlePreviousMonth = () => {
     if (currentMonth === 1) {
@@ -71,13 +75,15 @@ export function MonthNavigation({
   const wrapperStyle: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
+    justifyContent: showMonthGrid ? "flex-start" : "center",
     gap: isMobile ? "8px" : "16px",
     paddingTop: "16px",
     paddingBottom: "16px",
-    paddingLeft: 0,
+    paddingLeft: showMonthGrid ? 0 : "12px",
     // A bit of breathing room after the right-hand arrow so it doesn't sit
-    // flush against the page edge on narrow screens.
-    paddingRight: isMobile ? "12px" : 0,
+    // flush against the page edge on narrow screens; the dropdown mode
+    // mirrors it on the left too so centering stays symmetric.
+    paddingRight: showMonthGrid ? (isMobile ? "12px" : 0) : "12px",
     minWidth: 0,
   };
 
@@ -166,20 +172,7 @@ export function MonthNavigation({
       >
         <ChevronIcon direction="left" />
       </button>
-      {isMobile ? (
-        <select
-          aria-label="Select month"
-          style={mobileSelectStyle}
-          value={currentMonth}
-          onChange={(e) => onMonthChange(Number(e.target.value), currentYear)}
-        >
-          {MONTHS.map((month) => (
-            <option key={month.value} value={month.value}>
-              {month.label}
-            </option>
-          ))}
-        </select>
-      ) : (
+      {showMonthGrid ? (
         <div style={containerStyle}>
           {MONTHS.map((month) => (
             <button
@@ -201,6 +194,19 @@ export function MonthNavigation({
             </button>
           ))}
         </div>
+      ) : (
+        <select
+          aria-label="Select month"
+          style={mobileSelectStyle}
+          value={currentMonth}
+          onChange={(e) => onMonthChange(Number(e.target.value), currentYear)}
+        >
+          {MONTHS.map((month) => (
+            <option key={month.value} value={month.value}>
+              {month.label}
+            </option>
+          ))}
+        </select>
       )}
       <button
         style={navigationButtonStyle}

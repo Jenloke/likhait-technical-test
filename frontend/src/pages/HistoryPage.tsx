@@ -12,10 +12,14 @@ import { useCategories } from "../hooks/useCategories";
 import { Modal, Button } from "../vibes";
 import { COLORS } from "../constants/colors";
 import { TYPOGRAPHY } from "../constants/typography";
-import { useIsMobile } from "../hooks/useMediaQuery";
+import { useIsMobile, useMediaQuery } from "../hooks/useMediaQuery";
 
 const HistoryPage: React.FC = () => {
   const isMobile = useIsMobile();
+  // Below this, "Expense History" and the year nav no longer fit on one
+  // line, so the header switches from a single space-between row (title
+  // left, year right) to title and year stacked on their own centered rows.
+  const isCompactMobile = useMediaQuery("(max-width: 430px)");
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -138,6 +142,22 @@ const HistoryPage: React.FC = () => {
     flexWrap: "wrap",
     alignItems: "center",
     gap: isMobile ? "12px" : "24px",
+    justifyContent: isMobile ? "space-between" : "flex-start",
+    width: isMobile ? "100%" : "auto",
+  };
+
+  // Compact mobile: title and year no longer fit on one line, so the year
+  // nav wraps onto its own full-width row — center it there. Once there's
+  // room for both (still mobile, just not compact), leftHeaderStyle's own
+  // space-between already spreads title/year apart, so this stays inert.
+  const yearWrapperStyle: React.CSSProperties = isCompactMobile
+    ? { width: "100%", display: "flex", justifyContent: "center" }
+    : {};
+
+  const actionButtonsRowStyle: React.CSSProperties = {
+    display: "flex",
+    gap: "12px",
+    ...(isMobile ? { width: "100%", justifyContent: "center" } : {}),
   };
 
   const titleStyle: React.CSSProperties = {
@@ -164,12 +184,14 @@ const HistoryPage: React.FC = () => {
       <div style={headerStyle}>
         <div style={leftHeaderStyle}>
           <h1 style={titleStyle}>Expense History</h1>
-          <YearNavigation
-            currentYear={selectedYear}
-            onYearChange={handleYearChange}
-          />
+          <div style={yearWrapperStyle}>
+            <YearNavigation
+              currentYear={selectedYear}
+              onYearChange={handleYearChange}
+            />
+          </div>
         </div>
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div style={actionButtonsRowStyle}>
           <Button
             variant="secondary"
             onClick={() => setIsAddCategoryModalOpen(true)}
