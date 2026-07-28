@@ -76,7 +76,10 @@ export function Modal({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 1000,
+    // Above the mobile sidebar drawer (zIndex 1100, toggle button 1101 —
+    // see Sidebar.tsx) so a modal opened from inside the drawer (e.g. the
+    // theme picker via the sidebar's $ icon) isn't rendered behind it.
+    zIndex: 1200,
   };
 
   const modalStyle: React.CSSProperties = {
