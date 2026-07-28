@@ -5,6 +5,7 @@
 import React, { useState } from "react";
 import { Category } from "../types";
 import { COLORS } from "../constants/colors";
+import { TYPOGRAPHY } from "../constants/typography";
 import { Modal, TextField, Button } from "../vibes";
 
 const EMOJI_OPTIONS = [
@@ -124,7 +125,7 @@ export function AddCategoryModal({
   };
 
   const errorBannerStyle: React.CSSProperties = {
-    fontSize: "0.875rem",
+    fontSize: TYPOGRAPHY.size.sm,
     color: COLORS.danger,
     backgroundColor: COLORS.red.re02,
     padding: "0.5rem 0.75rem",
@@ -132,8 +133,8 @@ export function AddCategoryModal({
   };
 
   const emojiLabelStyle: React.CSSProperties = {
-    fontSize: "0.875rem",
-    fontWeight: 600,
+    fontSize: TYPOGRAPHY.size.sm,
+    fontWeight: TYPOGRAPHY.weight.semibold,
     color: COLORS.text.primary,
   };
 
@@ -145,8 +146,8 @@ export function AddCategoryModal({
   };
 
   const emojiButtonStyle = (selected: boolean): React.CSSProperties => ({
-    fontSize: "1.25rem",
-    lineHeight: 1,
+    fontSize: TYPOGRAPHY.size.lg,
+    lineHeight: TYPOGRAPHY.lineHeight.none,
     padding: "0.5rem",
     borderRadius: "0.375rem",
     border: `1px solid ${selected ? COLORS.primary.p06 : COLORS.border}`,

@@ -4,6 +4,7 @@
 
 import React from "react";
 import { COLORS } from "../constants/colors";
+import { TYPOGRAPHY } from "../constants/typography";
 
 interface Column<T> {
   key: string;
@@ -40,7 +41,7 @@ export function ItemTable<T extends Record<string, unknown>>({
   const thStyle: React.CSSProperties = {
     padding: "0.75rem",
     textAlign: "left",
-    fontWeight: 600,
+    fontWeight: TYPOGRAPHY.weight.semibold,
     color: COLORS.text.primary,
     borderBottom: `2px solid ${COLORS.border}`,
   };

@@ -4,6 +4,7 @@
 
 import React from "react";
 import { COLORS } from "../constants/colors";
+import { TYPOGRAPHY } from "../constants/typography";
 
 interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -29,14 +30,14 @@ export function TextField({
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: "0.875rem",
-    fontWeight: 600,
+    fontSize: TYPOGRAPHY.size.sm,
+    fontWeight: TYPOGRAPHY.weight.semibold,
     color: COLORS.text.primary,
   };
 
   const inputStyle: React.CSSProperties = {
     padding: "0.5rem 0.75rem",
-    fontSize: "1rem",
+    fontSize: TYPOGRAPHY.size.base,
     border: `1px solid ${error ? COLORS.danger : COLORS.border}`,
     borderRadius: "0.375rem",
     outline: "none",
@@ -46,7 +47,7 @@ export function TextField({
   };
 
   const errorStyle: React.CSSProperties = {
-    fontSize: "0.75rem",
+    fontSize: TYPOGRAPHY.size.xs,
     color: COLORS.danger,
     marginTop: "-0.25rem",
   };

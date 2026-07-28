@@ -4,6 +4,7 @@
 
 import React from "react";
 import { COLORS } from "../constants/colors";
+import { TYPOGRAPHY } from "../constants/typography";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger" | "success";
@@ -51,11 +52,11 @@ export function Button({
   const getSizeStyles = () => {
     switch (size) {
       case "small":
-        return { padding: "0.375rem 0.75rem", fontSize: "0.875rem" };
+        return { padding: "0.375rem 0.75rem", fontSize: TYPOGRAPHY.size.sm };
       case "medium":
-        return { padding: "0.5rem 1rem", fontSize: "1rem" };
+        return { padding: "0.5rem 1rem", fontSize: TYPOGRAPHY.size.base };
       case "large":
-        return { padding: "0.75rem 1.5rem", fontSize: "1.125rem" };
+        return { padding: "0.75rem 1.5rem", fontSize: TYPOGRAPHY.size.md };
     }
   };
 
@@ -66,7 +67,7 @@ export function Button({
     borderRadius: "0.375rem",
     cursor: disabled ? "not-allowed" : "pointer",
     opacity: disabled ? 0.6 : 1,
-    fontWeight: 600,
+    fontWeight: TYPOGRAPHY.weight.semibold,
     transition: "all 0.2s",
     display: "inline-flex",
     alignItems: "center",

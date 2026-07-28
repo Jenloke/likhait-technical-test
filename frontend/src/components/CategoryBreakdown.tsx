@@ -1,6 +1,9 @@
 import React from "react";
 import { useCategories } from "../hooks/useCategories";
 import { COLORS } from "../constants/colors";
+import { TYPOGRAPHY } from "../constants/typography";
+import { AnimatedCollapse } from "../vibes";
+import { useIsMobile } from "../hooks/useMediaQuery";
 
 interface CategoryData {
   category: string;
@@ -20,6 +23,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
   totalCount,
 }) => {
   const [isCollapsed, setIsCollapsed] = React.useState(true);
+  const isMobile = useIsMobile();
   const { categories: allCategories } = useCategories();
   const emojiByName = new Map(allCategories.map((c) => [c.name, c.emoji]));
 
@@ -35,30 +39,31 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
   };
 
   const totalStyle: React.CSSProperties = {
-    padding: "16px 24px",
+    padding: isMobile ? "12px 16px" : "16px 24px",
     display: "flex",
     alignItems: "center",
-    gap: "12px",
+    flexWrap: "wrap",
+    gap: isMobile ? "8px" : "12px",
     borderBottom: `1px solid ${COLORS.secondary.s04}`,
     background: COLORS.secondary.s01,
     cursor: "pointer",
   };
 
   const totalLabelStyle: React.CSSProperties = {
-    fontSize: "14px",
-    fontWeight: 600,
+    fontSize: TYPOGRAPHY.size.sm,
+    fontWeight: TYPOGRAPHY.weight.semibold,
     color: COLORS.secondary.s08,
     letterSpacing: "0.05em",
   };
 
   const totalAmountStyle: React.CSSProperties = {
-    fontSize: "32px",
-    fontWeight: 700,
+    fontSize: isMobile ? TYPOGRAPHY.size.xl : TYPOGRAPHY.role.statNumber.size,
+    fontWeight: TYPOGRAPHY.role.statNumber.weight,
     color: COLORS.secondary.s10,
   };
 
   const totalCountStyle: React.CSSProperties = {
-    fontSize: "14px",
+    fontSize: TYPOGRAPHY.size.sm,
     color: COLORS.secondary.s07,
     marginLeft: "auto",
   };
@@ -100,7 +105,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
   };
 
   const itemIconStyle: React.CSSProperties = {
-    fontSize: "32px",
+    fontSize: TYPOGRAPHY.size["2xl"],
     width: "48px",
     height: "48px",
     display: "flex",
@@ -118,19 +123,19 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
   };
 
   const itemNameStyle: React.CSSProperties = {
-    fontSize: "18px",
-    fontWeight: 600,
+    fontSize: TYPOGRAPHY.size.md,
+    fontWeight: TYPOGRAPHY.weight.semibold,
     color: COLORS.secondary.s10,
   };
 
   const itemCountStyle: React.CSSProperties = {
-    fontSize: "14px",
+    fontSize: TYPOGRAPHY.size.sm,
     color: COLORS.secondary.s07,
   };
 
   const itemAmountStyle: React.CSSProperties = {
-    fontSize: "24px",
-    fontWeight: 700,
+    fontSize: TYPOGRAPHY.size.xl,
+    fontWeight: TYPOGRAPHY.weight.bold,
     color: COLORS.secondary.s10,
   };
 
@@ -182,7 +187,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
         </button>
       </div>
 
-      {!isCollapsed && (
+      <AnimatedCollapse isOpen={!isCollapsed}>
         <div style={listStyle}>
           {categories.map((category) => (
             <div
@@ -216,7 +221,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
             </div>
           ))}
         </div>
-      )}
+      </AnimatedCollapse>
     </div>
   );
 };
