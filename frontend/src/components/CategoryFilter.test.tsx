@@ -79,6 +79,21 @@ describe("CategoryFilter", () => {
     expect(onChange).toHaveBeenCalledWith([]);
   });
 
+  it("treats every category being individually selected the same as All", () => {
+    render(
+      <CategoryFilter
+        categories={categories}
+        selected={["Food", "Bills"]}
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
   it("does not mark All as pressed for a partial selection", () => {
     render(
       <CategoryFilter

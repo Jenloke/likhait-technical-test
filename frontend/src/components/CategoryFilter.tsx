@@ -26,6 +26,12 @@ export function CategoryFilter({
     );
   };
 
+  // Selecting every category one by one filters identically to selecting
+  // none, so "All" should read as active in both cases, not just the latter.
+  const isAllActive =
+    selected.length === 0 ||
+    categories.every((category) => selected.includes(category.name));
+
   const containerStyle: React.CSSProperties = {
     display: "flex",
     flexWrap: "wrap",
@@ -56,8 +62,8 @@ export function CategoryFilter({
     <div style={containerStyle} role="group" aria-label="Filter by category">
       <button
         type="button"
-        style={getChipStyle(selected.length === 0)}
-        aria-pressed={selected.length === 0}
+        style={getChipStyle(isAllActive)}
+        aria-pressed={isAllActive}
         onClick={() => onChange([])}
       >
         All
