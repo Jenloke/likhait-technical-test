@@ -90,15 +90,15 @@ The frontend no longer hardcodes categories: `src/hooks/useCategories.ts` fetche
 
 The folder layout is intentional; put new code in the existing folder that matches its role rather than inventing new top-level directories:
 
-- `src/pages/` — top-level, routed views (`App.tsx` switches on a `currentPage` string state, not `react-router` yet, despite the dependency being installed)
-- `src/components/` — feature components specific to this app (`Sidebar`, `ExpenseForm`, `CalendarExpenseTable`, `AddCategoryModal`, etc.)
-- `src/vibes/` — the internal design-system component library (`Button`, `TextField`, `SelectBox`, `Modal`, `ItemTable`, …), re-exported through `src/vibes/index.ts`. Generic, reusable, unbranded UI primitives belong here, not in `components/`. Form-control primitives here (`TextField`, `SelectBox`) must render a real `<label htmlFor>` wired to the input's `id` — needed for accessibility and for RTL's `getByLabelText` in tests.
-- `src/hooks/` — stateful logic extracted from components (`useExpenseForm.ts`, `useCategories.ts`)
+- `src/pages/` — top-level, routed views (`App.tsx` switches on a `currentPage` string state, not `react-router` yet, despite the dependency being installed). `DashboardPage` (the default landing page) and `HistoryPage` are the only two today.
+- `src/components/` — feature components specific to this app (`Sidebar`, `ExpenseForm`, `CalendarExpenseTable`, `AddCategoryModal`, `CategoryFilter`, `ThemeModal`, etc.)
+- `src/vibes/` — the internal design-system component library (`Button`, `TextField`, `SelectBox`, `Modal`, `ItemTable`, `PieChart`, `AnimatedCollapse`, …), re-exported through `src/vibes/index.ts`. Generic, reusable, unbranded UI primitives belong here, not in `components/` — `PieChart` in particular takes only pre-aggregated, pre-colored slices and a value formatter; it has no idea what a "category" or "expense" is, and `DashboardPage` does all of that aggregation itself before calling it. Form-control primitives here (`TextField`, `SelectBox`) must render a real `<label htmlFor>` wired to the input's `id` — needed for accessibility and for RTL's `getByLabelText` in tests.
+- `src/hooks/` — stateful logic extracted from components (`useExpenseForm.ts`, `useCategories.ts`, `useTheme.ts`, `useMediaQuery.ts`)
 - `src/services/` — backend I/O only (`api.ts`)
 - `src/utils/` — pure functions, no side effects, no React (`expenseUtils.ts`)
-- `src/constants/` — static/shared values that aren't backend data (`colors.ts`, `themes.ts`)
+- `src/constants/` — static/shared values that aren't backend data (`colors.ts`, `themes.ts`, `typography.ts`, `breakpoints.ts`)
 - `src/types.ts` — single shared types file; add new shared interfaces here rather than scattering per-component type files
-- `src/test/setup.ts` — Vitest/RTL global setup (jest-dom matchers etc.), wired via `vite.config.ts`'s `test.setupFiles`; add global test config here, not per-file
+- `src/test/setup.ts` — Vitest/RTL global setup (jest-dom matchers, a `window.matchMedia` stub for `useMediaQuery` — see Responsive design below — wired via `vite.config.ts`'s `test.setupFiles`); add global test config here, not per-file
 - `e2e/` (top-level, alongside `src/`, not inside it) — Playwright specs and shared helpers (`dateHelpers.ts`)
 
 ### Theming (hidden picker)
@@ -126,6 +126,114 @@ component that needs a solid-color fill, reuse an existing `COLORS` key
 rather than a literal hex — a literal color will not re-theme and will look
 broken under the dark themes (`wavez`, `modern-dolch`).
 
+### Responsive design & typography
+
+Inline `React.CSSProperties` can't express `@media` queries, so components
+branch on viewport instead of relying on CSS breakpoints:
+- `src/hooks/useMediaQuery.ts` exports `useMediaQuery(query)` (a thin
+  `matchMedia` wrapper) and `useIsMobile()` (`max-width: ${BREAKPOINTS.laptop
+  - 1}px`, i.e. below 1024px). Components needing a *different* cutoff than
+  the mobile/desktop split (e.g. `HistoryPage`'s `isCompactMobile` at 430px,
+  `MonthNavigation`'s own switch at 768px) call `useMediaQuery` directly with
+  a query built from `BREAKPOINTS`, rather than adding a new named hook per
+  cutoff.
+- `src/constants/breakpoints.ts` is the single source for the three cutoffs
+  in px (`compactMobile: 430`, `tablet: 768`, `laptop: 1024`) — reference
+  `BREAKPOINTS.*` when building a custom query rather than hardcoding a
+  literal number, so the cutoffs can't drift apart if one call site changes
+  without the others.
+- jsdom doesn't implement `matchMedia`, so `src/test/setup.ts` stubs
+  `window.matchMedia` to always report "no match" (i.e. desktop) if the
+  environment doesn't already provide it. A test exercising the mobile
+  branch of a `useMediaQuery`-consuming component needs to override
+  `window.matchMedia` itself before rendering.
+- Below the laptop breakpoint, `Sidebar` becomes an off-canvas drawer
+  (slide transform + backdrop) opened via a hamburger button in `App.tsx`'s
+  mobile top bar, instead of the permanent desktop column; `CalendarExpenseTable`
+  swaps its `<table>` for a stacked list of cards, each expandable via
+  `AnimatedCollapse` (`src/vibes/AnimatedCollapse.tsx` — a generic
+  grid-template-rows expand/collapse primitive with no animation-library
+  dependency) instead of an instant show/hide.
+
+`src/constants/typography.ts`'s `TYPOGRAPHY` object is the single font-size/
+weight/line-height scale (in rem) — don't hardcode a literal `fontSize`/
+`fontWeight` in a new component. Prefer a semantic `TYPOGRAPHY.role.*` entry
+(`pageTitle`, `sectionTitle`, `statNumber`, `modalTitle`, `navItem`, `body`,
+`label`, `caption` — each a `{ size, weight }` pair) over the raw
+`TYPOGRAPHY.size.*`/`TYPOGRAPHY.weight.*` primitives when the text you're
+styling matches one of those roles; fall back to the primitives only when it
+doesn't.
+
+### Navigation: Dashboard vs. History
+
+`App.tsx`'s `currentPage` state defaults to `"dashboard"`, not `"history"` —
+`DashboardPage` is the app's landing view. `Sidebar`'s nav highlighting is
+generalized to any number of items (compares `currentPage` against each
+button's own page id) rather than hardcoded to a single "History" case, so
+adding a third nav destination doesn't require touching the highlighting
+logic itself.
+
+Because `HistoryPage` keeps its own `selectedYear`/`selectedMonth` state
+(and mirrors it into the `?year=&month=` URL params), navigating away to
+Dashboard and back used to silently reset History to the current month.
+`HistoryPage` now takes an `onYearMonthChange?: (year, month) => void` prop
+and calls it on mount and on every change; `App` stores that in
+`historyYearMonth` state and, in its `handleNavigate`, writes those params
+back into the URL right *before* switching `currentPage` to `"history"` (and
+strips both params when switching to `"dashboard"`, since they're History's
+URL state, not the app's). A first-ever visit to History in a session (no
+`historyYearMonth` yet) still falls back to `HistoryPage`'s own
+`getInitialYearMonth()` default (current month), unchanged from before. If
+you add a third page with its own persisted view-state, follow this same
+"child reports up via a callback prop, `App` owns the cross-page memory and
+URL restoration" pattern rather than lifting the state itself into `App`.
+
+### Dashboard charts, category filtering & pagination
+
+- **`PieChart`** (`src/vibes/PieChart.tsx`) is a generic SVG donut + legend:
+  callers pass already-aggregated `PieChartDatum[]` (`{ label, value, color,
+  icon?, count? }`) plus a `formatValue` formatter; the component only lays
+  out the ring and legend; it does zero aggregation or color assignment
+  itself. `DashboardPage` is the only current consumer: it buckets the
+  current month's expenses by category, sorts by amount, colors the top 6
+  from a fixed categorical ramp (`CATEGORICAL_COLORS`, matching
+  `constants/colors.ts`'s hue order — never cycled or re-derived per
+  category), and folds any remaining categories into a synthetic "Other"
+  slice (renamed "Other categories" if a real category is *also* named
+  "Other", so the legend never shows two ambiguous rows with the same
+  label). `expenseUtils.ts#formatCompactCurrency` (`$21,230.91` →
+  `$21.2K`, only kicking in above $1,000) keeps the donut's center total
+  legible — use it for any other tight-space total display; use plain
+  `formatCurrency` everywhere else.
+- **`CategoryFilter`** (`src/components/CategoryFilter.tsx`) is `HistoryPage`-
+  only today: an "All" pill plus one toggleable pill per category, backed by
+  a `selectedCategories: string[]` array (not a single selected value) so
+  multiple categories can be active at once. Filtering happens client-side
+  against the already-fetched month's expenses and feeds both
+  `CategoryBreakdown`'s totals and `CalendarExpenseTable`'s rows. Note
+  `isAllActive` is `selected.length === 0 || every category individually
+  selected` — both states filter identically, so both must read as active,
+  not just the former.
+- **Pagination**: `CalendarExpenseTable` takes a `resetPaginationKey?:
+  string` prop — change it (`HistoryPage` derives it from
+  `selectedCategories.slice().sort().join(",")`) whenever a *filter*
+  changes, not just the underlying data, to force `currentPage` back to 1.
+  Merely clamping `currentPage` down when it exceeds the new `totalPages`
+  isn't enough on its own: the page number can still be "in range" for a
+  same-sized but entirely different filtered result set, silently stranding
+  the user mid-list. Separately, `CalendarExpenseTable` also has its own
+  "Rows" `SelectBox` (`PAGE_SIZE_OPTIONS = [10, 25, 50]`) for page size, and
+  clamps `currentPage` down (via a `useEffect` on `totalPages`) whenever the
+  `expenses` prop itself shrinks out from under the current page — e.g.
+  switching to a lighter month, or a filter/delete reducing the row count.
+- **`SelectBox`'s `includePlaceholder` prop** (default `true`): the "Rows"
+  control above is the reason this exists — an always-present `<option
+  value="">Select...</option>` makes sense for a required field like the
+  category picker, but is a trap for a control that must never be blank
+  (picking the placeholder would zero out the page size). Pass
+  `includePlaceholder={false}` for any new `SelectBox` where an empty
+  selection isn't a valid state.
+
 ### Backend structure — where new code goes
 
 Standard Rails layout, API-only:
@@ -138,7 +246,7 @@ Standard Rails layout, API-only:
 ## Testing conventions
 
 - **Backend**: RSpec, mirrored 1:1 under `spec/models/` and `spec/requests/api/` (request specs, not controller specs, for the API layer). Specs build data with plain `Model.create!(...)`, not the FactoryBot factories — `spec/factories/expenses.rb` is stale (it still sets a `payer_name` attribute that doesn't exist on the `expenses` table) and isn't referenced by any spec; don't reach for `create(:expense)` without first fixing that factory to match the current schema. SimpleCov starts automatically via `require "simplecov"` at the top of `spec/spec_helper.rb`, so `bundle exec rspec` always regenerates `backend/coverage/` — no separate coverage command.
-- **Frontend unit/component tests**: Vitest + React Testing Library, colocated as `*.test.ts`/`*.test.tsx` next to the file under test (`src/services/api.test.ts`, `src/hooks/useCategories.test.ts`, `src/vibes/Modal.test.tsx`, …), not in a separate `__tests__` directory. Follow this colocation for any new test.
+- **Frontend unit/component tests**: Vitest + React Testing Library, colocated as `*.test.ts`/`*.test.tsx` next to the file under test (`src/pages/DashboardPage.test.tsx`, `src/vibes/PieChart.test.tsx`, `src/components/CategoryFilter.test.tsx`, `src/hooks/useTheme.test.ts`, …), not in a separate `__tests__` directory. Follow this colocation for any new test. A component that reads `useIsMobile()`/`useMediaQuery()` renders using the `test/setup.ts` desktop-default `matchMedia` stub unless a test explicitly overrides `window.matchMedia` first — write that override, and test the mobile branch, if the new UI actually differs by breakpoint.
 - **Frontend e2e**: Playwright specs live under the top-level `e2e/` directory (`category-management.spec.ts`, `expense-ordering.spec.ts`, `future-date-guard.spec.ts`), one file per user-facing flow, not per component. `playwright.config.ts` always sets `reuseExistingServer: true` — it's not conditioned on `!CI`, because the same suite also runs against an already-booted Docker stack in the `docker-deploy` CI job; it still boots fresh servers locally when nothing's listening.
 - **Linting**: `eslint.config.js` (flat config) covers `**/*.{ts,tsx}`; test files and `e2e/**` get Node globals in addition to browser globals. There's no Prettier — formatting isn't currently enforced separately from ESLint's rules.
 
