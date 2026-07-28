@@ -116,6 +116,31 @@ describe("CalendarExpenseTable", () => {
     expect(screen.getByText("Expense 15")).toBeInTheDocument();
   });
 
+  it("clamps to the last valid page when the expenses prop shrinks out from under it", async () => {
+    const user = userEvent.setup();
+    const manyExpenses = Array.from({ length: 15 }, (_, i) =>
+      makeExpense({ id: i + 1, description: `Expense ${i + 1}` }),
+    );
+
+    const { rerender } = render(
+      <CalendarExpenseTable expenses={manyExpenses} onExpenseUpdated={vi.fn()} />,
+    );
+    await waitFor(() => expect(api.fetchCategories).toHaveBeenCalled());
+
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByText("Expense 11")).toBeInTheDocument();
+
+    const fewExpenses = [makeExpense({ id: 1, description: "Only expense" })];
+    rerender(
+      <CalendarExpenseTable expenses={fewExpenses} onExpenseUpdated={vi.fn()} />,
+    );
+
+    expect(await screen.findByText("Only expense")).toBeInTheDocument();
+    expect(
+      screen.queryByText("No expenses found. Add your first expense to get started!"),
+    ).not.toBeInTheDocument();
+  });
+
   it("opens the edit modal pre-filled with the selected expense", async () => {
     const user = userEvent.setup();
     render(

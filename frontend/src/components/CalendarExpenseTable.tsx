@@ -2,7 +2,7 @@
  * Calendar expense table component
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Expense, ExpenseFormData } from "../types";
 import { formatCurrency, formatDate } from "../utils/expenseUtils";
 import { useCategories } from "../hooks/useCategories";
@@ -41,6 +41,12 @@ export function CalendarExpenseTable({
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const currentExpenses = expenses.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
 
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);
