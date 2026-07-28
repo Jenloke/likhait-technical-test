@@ -96,10 +96,35 @@ The folder layout is intentional; put new code in the existing folder that match
 - `src/hooks/` — stateful logic extracted from components (`useExpenseForm.ts`, `useCategories.ts`)
 - `src/services/` — backend I/O only (`api.ts`)
 - `src/utils/` — pure functions, no side effects, no React (`expenseUtils.ts`)
-- `src/constants/` — static/shared values that aren't backend data (`colors.ts`)
+- `src/constants/` — static/shared values that aren't backend data (`colors.ts`, `themes.ts`)
 - `src/types.ts` — single shared types file; add new shared interfaces here rather than scattering per-component type files
 - `src/test/setup.ts` — Vitest/RTL global setup (jest-dom matchers etc.), wired via `vite.config.ts`'s `test.setupFiles`; add global test config here, not per-file
 - `e2e/` (top-level, alongside `src/`, not inside it) — Playwright specs and shared helpers (`dateHelpers.ts`)
+
+### Theming (hidden picker)
+
+`src/constants/colors.ts`'s `COLORS` object holds `var(--ex-*)` CSS custom
+property references, not literal hex — this is intentional, not a bug. The
+actual hex values per theme live in `src/theme.css` as a `:root` (default)
+block plus one `[data-theme="wavez"|"modern-dolch"|"bento"]` override block
+per theme; switching the `data-theme` attribute on `<html>` reskins every
+component that reads `COLORS.*` with no component-level changes needed.
+`src/constants/themes.ts` is the theme registry (id/label/emoji/description/
+preview swatches — swatches are literal hex duplicates kept in sync by hand
+with `theme.css`), and `src/hooks/useTheme.ts` persists the choice to
+`localStorage` and applies the attribute (a small inline script in
+`index.html`'s `<head>` reads the same key to avoid a flash on reload).
+Only `primary`, `secondary`, `background`, `text`, `border`, and `onAccent`
+(text/icon color for use on top of a solid accent fill) vary per theme —
+the categorical hue ramps (`red`/`orange`/`yellow`/`yellowGreen`/`green`/
+`blueGreen` and the `success`/`warning`/`danger`/`info` aliases) are
+intentionally constant across all themes since they encode category/status
+meaning, not brand chrome. The picker itself (`src/components/
+ThemeModal.tsx`) is a deliberate easter egg — it opens by clicking the "$"
+logo icon in `Sidebar.tsx`, with no other visible affordance. If you add a
+component that needs a solid-color fill, reuse an existing `COLORS` key
+rather than a literal hex — a literal color will not re-theme and will look
+broken under the dark themes (`wavez`, `modern-dolch`).
 
 ### Backend structure — where new code goes
 
