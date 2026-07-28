@@ -17,7 +17,7 @@ test("a backdated expense is ranked by its date, not by when it was created", as
     await page.getByRole("button", { name: "Add Expense", exact: true }).click();
     await page.getByLabel("Amount").fill("10");
     await page.getByLabel("Description").fill(description);
-    await page.getByLabel("Category").selectOption("Food");
+    await page.getByLabel("Category", { exact: true }).selectOption("Food");
     await page.getByLabel("Date").fill(date);
     await page
       .getByRole("button", { name: "Add Expense", exact: true })

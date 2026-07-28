@@ -22,7 +22,7 @@ test("blocks a future-dated expense with an inline validation message", async ({
 
   await page.getByLabel("Amount").fill("10");
   await page.getByLabel("Description").fill(uniqueDescription);
-  await page.getByLabel("Category").selectOption("Food");
+  await page.getByLabel("Category", { exact: true }).selectOption("Food");
   await dateInput.fill(futureIso);
   await page
     .getByRole("button", { name: "Add Expense", exact: true })
