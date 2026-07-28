@@ -19,6 +19,22 @@ export function formatCurrency(amount: number): string {
 }
 
 /**
+ * Format a currency amount compactly for tight spaces (e.g. inside a donut
+ * chart's center hole) — $1,284 stays as-is, $21,230.91 becomes $21.2K.
+ */
+export function formatCompactCurrency(amount: number): string {
+  if (Math.abs(amount) < 1000) {
+    return formatCurrency(amount);
+  }
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(amount);
+}
+
+/**
  * Format date to YYYY-MM-DD
  */
 export function formatDate(date: Date): string {
